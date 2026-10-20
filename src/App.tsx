@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Controls from './components/Controls'
 import Heatmap from './components/Heatmap'
 import Title from './components/Title'
 import YearLabel from './components/YearLabel'
@@ -15,7 +16,7 @@ export default function App() {
       .catch(() => setHistory({ years: [] }))
   }, [])
 
-  const { phase, year, dayIndex, play, pause } = useReplay(history)
+  const { phase, year, dayIndex, totalDays, currentGlobal, play, pause, seekTo } = useReplay(history)
 
   if (!history) return <p className="loading">Loading…</p>
   if (!year) return <p className="empty">No practice history found.</p>
@@ -34,11 +35,13 @@ export default function App() {
       </p>
       <YearLabel label={year.label} />
       <Heatmap year={year} dayIndex={dayIndex} phase={phase} />
-      <div className="controls">
-        <button className="play-btn" onClick={toggle}>
-          {phase === 'playing' ? 'Pause' : 'Play'}
-        </button>
-      </div>
+      <Controls
+        phase={phase}
+        totalDays={totalDays}
+        currentGlobal={currentGlobal}
+        onToggle={toggle}
+        onSeek={seekTo}
+      />
     </main>
   )
 }

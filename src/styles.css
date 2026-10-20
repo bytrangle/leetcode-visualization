@@ -194,6 +194,41 @@ body {
 
 .controls {
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.seek {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 240px;
+  height: 4px;
+  border-radius: 999px;
+  background: #d1d5db;
+  outline: none;
+  cursor: pointer;
+}
+
+.seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1c1e21;
+  border: none;
+  cursor: grab;
+}
+
+.seek::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1c1e21;
+  border: none;
+  cursor: grab;
 }
 
 .play-btn {

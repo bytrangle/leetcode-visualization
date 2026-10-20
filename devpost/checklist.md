@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Watch a cell fill — its popup should appear and clear ~0.5s later; hover a filled cell and confirm the popup returns.
   Commit: `Add day popup with difficulty dots and hover`
 
-- [ ] **4. Year transition: whole-grid flip, label advance, loop until the end**
+- [x] **4. Year transition: whole-grid flip, label advance, loop until the end**
   Becomes usable: After a year's last active day, the whole grid flips to the next year (label updates, cells reset grey), continues through the final year, then stops.
   Why now: Completes the "year after year" half of the kernel now that individual days already fill correctly.
   PRD ref: `prd.md > Features and Behavior > Year transition`

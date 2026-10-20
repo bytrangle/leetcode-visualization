@@ -24,3 +24,25 @@ export const SAMPLE_SUBMISSIONS: Submission[] = [
   { title: 'Trapping Rain Water', difficulty: 'Hard', timestamp: D(2022, 2, 20) },
   { title: 'Climbing Stairs', difficulty: 'Easy', timestamp: D(2022, 6, 30) },
 ]
+
+// A long synthetic history (3 years × 20 active days) for testing controls
+// that only appear on extended replays (the seek bar).
+export function generateLongHistory(): Submission[] {
+  const DIFFS = ['Easy', 'Medium', 'Hard'] as const
+  const subs: Submission[] = []
+  let n = 1
+  for (let year = 2019; year <= 2021; year++) {
+    for (let i = 0; i < 20; i++) {
+      const ts = Date.UTC(year, 0, 2 + i * 18) / 1000 // one day every ~18 days
+      const perDay = 1 + (i % 3)
+      for (let p = 0; p < perDay; p++) {
+        subs.push({
+          title: `Sample Problem ${n++}`,
+          difficulty: DIFFS[(i + p) % 3],
+          timestamp: ts + p * 3600,
+        })
+      }
+    }
+  }
+  return subs
+}
