@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Run `npm start -- --demo`, open the printed localhost URL, and confirm the year label and grey 365-cell grid appear.
   Commit: `Bootstrap app and render sample-data heatmap grid`
 
-- [ ] **2. Replay: press play and days fill with difficulty color**
+- [x] **2. Replay: press play and days fill with difficulty color**
   Becomes usable: Pressing play fills each active day's cell in date order, colored by its average difficulty (green→yellow→red blend), on sample data.
   Why now: This is the unique kernel — the replay with difficulty coloring — so it lands right after the grid exists; everything later supports it.
   PRD ref: `prd.md > Features and Behavior > Replay`, `prd.md > The Core Journey` (step 4)

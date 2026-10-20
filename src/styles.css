@@ -86,8 +86,49 @@ body {
   grid-auto-flow: column;
   grid-auto-columns: var(--cell-size);
   gap: var(--gap);
-  justify-content: center;
+}
+
+.heatmap-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-top: 16px;
+}
+
+.heatmap-months {
+  display: grid;
+  grid-template-columns: repeat(53, var(--cell-size));
+  column-gap: var(--gap);
+  padding-left: 34px; /* weekday gutter (30px) + 4px margin */
+  margin-bottom: 4px;
+  font-size: 10px;
+  line-height: 1;
+  color: #6b7280;
+}
+
+.month-label {
+  white-space: nowrap;
+}
+
+.heatmap-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.heatmap-weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, var(--cell-size));
+  row-gap: var(--gap);
+  width: 30px;
+  margin-right: 4px;
+  font-size: 10px;
+  line-height: 1;
+  color: #6b7280;
+}
+
+.weekday-label {
+  display: flex;
+  align-items: center;
 }
 
 /* Cell + vertical card flip */
@@ -97,6 +138,7 @@ body {
   position: relative;
   display: block;
   border-radius: 2px;
+  transition: all 0.3s ease;
 }
 
 .cell-empty {
@@ -104,7 +146,7 @@ body {
 }
 
 .flip-cell {
-  perspective: var(--flip-perspective);
+  perspective: 100px;
 }
 
 .cell-face {
@@ -120,12 +162,12 @@ body {
 .initial-color {
   background: var(--grey);
   transform: rotateX(0deg);
-  transform-origin: 50% 50% var(--flip-origin-z);
+  transform-origin: 50% 50% -20px;
 }
 
 .final-color {
   transform: rotateX(90deg);
-  transform-origin: 50% 50% var(--flip-origin-z);
+  transform-origin: 50% 50% -20px;
 }
 
 .flip-cell.flipped .initial-color {

@@ -4,6 +4,9 @@ import type { Day, Year } from '../types'
 
 const WEEK_COLUMNS = 53
 const WEEK_ROWS = 7
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+// rows are Sunday-first (0 = Sun); GitHub shows Mon / Wed / Fri
+const WEEKDAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', '']
 
 // Map a YYYY-MM-DD date to a GitHub-style (column, row): columns are weeks,
 // rows are days of the week (Sunday = 0).
@@ -14,6 +17,19 @@ function dayPosition(date: string): { col: number; row: number } {
   const firstWeekday = yearStart.getUTCDay()
   const offset = dayOfYear + firstWeekday
   return { col: Math.floor(offset / 7), row: offset % 7 }
+}
+
+// Column index of the first cell of each month, for the current year.
+function monthColumns(yearLabel: number): (string | null)[] {
+  const firstWeekday = new Date(Date.UTC(yearLabel, 0, 1)).getUTCDay()
+  const cols: (string | null)[] = new Array(WEEK_COLUMNS).fill(null)
+  for (let m = 0; m < 12; m++) {
+    const first = new Date(Date.UTC(yearLabel, m, 1))
+    const dayOfYear = Math.floor((first.getTime() - Date.UTC(yearLabel, 0, 1)) / 86400000)
+    const col = Math.floor((dayOfYear + firstWeekday) / 7)
+    if (col < WEEK_COLUMNS) cols[col] = MONTH_NAMES[m]
+  }
+  return cols
 }
 
 interface HeatmapProps {
@@ -35,11 +51,7 @@ export default function Heatmap({ year, dayIndex }: HeatmapProps) {
       const hit = posToDay.get(`${col}:${row}`)
       if (hit) {
         cells.push(
-          <Cell
-            key={`${col}:${row}`}
-            color={dayColor(hit.day.problems)}
-            filled={dayIndex > hit.index}
-          />,
+          <Cell key={`${col}:${row}`} color={dayColor(hit.day.problems)} filled={dayIndex > hit.index} />,
         )
       } else {
         cells.push(<Cell key={`${col}:${row}`} filled={false} />)
@@ -47,5 +59,27 @@ export default function Heatmap({ year, dayIndex }: HeatmapProps) {
     }
   }
 
-  return <div className="heatmap">{cells}</div>
+  const months = monthColumns(year.label)
+
+  return (
+    <div className="heatmap-wrap">
+      <div className="heatmap-months">
+        {months.map((name, i) => (
+          <span key={i} className="month-label">
+            {name ?? ''}
+          </span>
+        ))}
+      </div>
+      <div className="heatmap-row">
+        <div className="heatmap-weekdays">
+          {WEEKDAY_LABELS.map((label, i) => (
+            <span key={i} className="weekday-label">
+              {label}
+            </span>
+          ))}
+        </div>
+        <div className="heatmap">{cells}</div>
+      </div>
+    </div>
+  )
 }
