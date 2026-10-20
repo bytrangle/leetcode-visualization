@@ -1,22 +1,8 @@
 import { useEffect, useState } from 'react'
 import Heatmap from './components/Heatmap'
 import YearLabel from './components/YearLabel'
-
-export interface Problem {
-  title: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
-}
-export interface Day {
-  date: string
-  problems: Problem[]
-}
-export interface Year {
-  label: number
-  days: Day[]
-}
-export interface History {
-  years: Year[]
-}
+import { useReplay } from './lib/replay'
+import type { History } from './types'
 
 export default function App() {
   const [history, setHistory] = useState<History | null>(null)
@@ -28,21 +14,26 @@ export default function App() {
       .catch(() => setHistory({ years: [] }))
   }, [])
 
-  if (!history) return <p className="loading">Loading…</p>
+  const { phase, year, dayIndex, play, pause } = useReplay(history)
 
-  const first = history.years[0]
+  if (!history) return <p className="loading">Loading…</p>
+  if (!year) return <p className="empty">No practice history found.</p>
+
+  const toggle = () => {
+    if (phase === 'playing') pause()
+    else play()
+  }
 
   return (
     <main className="app">
       <h1 className="title">Leet Years</h1>
-      {first ? (
-        <>
-          <YearLabel label={first.label} />
-          <Heatmap />
-        </>
-      ) : (
-        <p className="empty">No practice history found.</p>
-      )}
+      <YearLabel label={year.label} />
+      <Heatmap year={year} dayIndex={dayIndex} />
+      <div className="controls">
+        <button className="play-btn" onClick={toggle}>
+          {phase === 'playing' ? 'Pause' : 'Play'}
+        </button>
+      </div>
     </main>
   )
 }

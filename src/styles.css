@@ -44,11 +44,67 @@ body {
   margin-top: 16px;
 }
 
+/* Cell + vertical card flip */
 .cell {
   width: var(--cell-size);
   height: var(--cell-size);
-  background: var(--grey);
+  position: relative;
+  display: block;
   border-radius: 2px;
+}
+
+.cell-empty {
+  background: var(--grey);
+}
+
+.flip {
+  perspective: 60px;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  transition: transform 0.3s ease;
+  border-radius: 2px;
+}
+
+.face-initial {
+  background: var(--grey);
+  transform: rotateX(0deg);
+  transform-origin: 50% 50% -6px;
+}
+
+.face-final {
+  transform: rotateX(90deg);
+  transform-origin: 50% 50% -6px;
+}
+
+.flip.flipped .face-initial {
+  transform: rotateX(-90deg);
+}
+
+.flip.flipped .face-final {
+  transform: rotateX(0deg);
+}
+
+.controls {
+  margin-top: 20px;
+}
+
+.play-btn {
+  font: inherit;
+  font-size: 15px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: 1px solid #1c1e21;
+  background: #1c1e21;
+  color: #fff;
+  cursor: pointer;
+}
+
+.play-btn:hover {
+  background: #33363b;
 }
 
 .loading,

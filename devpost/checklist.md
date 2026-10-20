@@ -9,7 +9,7 @@ Build mode: fast
 
 ## Slices
 
-- [ ] **1. The app boots and renders the empty grey heatmap (sample data)**
+- [x] **1. The app boots and renders the empty grey heatmap (sample data)**
   Becomes usable: `npm start -- --demo` opens the browser to the year label and a 7×~53 light-grey grid; `/api/submissions` serves seeded sample history.
   Why now: Bootstraps everything (scaffold, deps, server, frontend) and proves the whole data path end to end with zero external risk, before the kernel lands on top.
   PRD ref: `prd.md > The Core Journey` (steps 1–3), `prd.md > Screens and Layout`
