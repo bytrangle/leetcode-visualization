@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Heatmap from './components/Heatmap'
+import Title from './components/Title'
 import YearLabel from './components/YearLabel'
 import { useReplay } from './lib/replay'
 import type { History } from './types'
@@ -26,7 +27,7 @@ export default function App() {
 
   return (
     <main className="app">
-      <h1 className="title">Leet Years</h1>
+      <Title text="Leet Years" />
       <YearLabel label={year.label} />
       <Heatmap year={year} dayIndex={dayIndex} />
       <div className="controls">
