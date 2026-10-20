@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Cell from './Cell'
 import Popup from './Popup'
@@ -46,6 +46,17 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
   const gridRef = useRef<HTMLDivElement>(null)
   const [hoveredDate, setHoveredDate] = useState<string | null>(null)
   const [popup, setPopup] = useState<{ day: Day; x: number; y: number } | null>(null)
+  const prevYearLabel = useRef(year.label)
+  const [flipping, setFlipping] = useState(false)
+
+  useEffect(() => {
+    if (prevYearLabel.current === year.label) return
+    prevYearLabel.current = year.label
+    setHoveredDate(null)
+    setFlipping(true)
+    const id = setTimeout(() => setFlipping(false), 600)
+    return () => clearTimeout(id)
+  }, [year.label])
 
   const posToDay = new Map<string, { day: Day; index: number }>()
   for (let i = 0; i < year.days.length; i++) {
@@ -125,7 +136,7 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
               </span>
             ))}
           </div>
-          <div className="heatmap" ref={gridRef}>
+          <div className={`heatmap${flipping ? ' year-flip' : ''}`} ref={gridRef}>
             {cells}
           </div>
         </div>

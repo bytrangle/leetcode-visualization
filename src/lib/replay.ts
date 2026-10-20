@@ -23,13 +23,17 @@ export function useReplay(history: History | null) {
   }, [phase, dayCount])
 
   useEffect(() => {
-    if (phase === 'playing' && dayCount > 0 && dayIndex >= dayCount) {
-      const id = setTimeout(() => {
+    if (phase !== 'playing' || dayCount === 0 || dayIndex < dayCount) return
+    const id = setTimeout(() => {
+      if (yearIndex < years.length - 1) {
+        setYearIndex((i) => i + 1)
+        setDayIndex(0)
+      } else {
         setPhase((p) => (p === 'playing' ? 'ended' : p))
-      }, DAY_STEP_MS)
-      return () => clearTimeout(id)
-    }
-  }, [phase, dayIndex, dayCount])
+      }
+    }, DAY_STEP_MS)
+    return () => clearTimeout(id)
+  }, [phase, dayIndex, dayCount, yearIndex, years.length])
 
   function play() {
     if (phase === 'ended') {
