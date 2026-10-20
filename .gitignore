@@ -1,0 +1,17 @@
+# Devpost learner profile — keeps personal learning context out of commits
+/devpost/learner-profile.md
+
+# Allowlisting .env.example but ignoring secrets
+.env
+.env.*
+!.env.example
+
+# Node / build output
+node_modules/
+dist/
+
+# Agent / tooling machinery (not part of the project)
+agent/
+.agents/
+.claude/
+skills-lock.json

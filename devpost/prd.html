@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leet Years — Product Requirements</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --ink: #1c1e21;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --card: #ffffff;
+    --accent: #4f8a3b;      /* "friendly" green anchor */
+    --yellow: #e0a800;
+    --red: #c94b4b;
+    --soft: #f0f3ec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 24px 80px; }
+  header .kicker {
+    text-transform: uppercase; letter-spacing: .12em; font-size: 12px;
+    color: var(--muted); font-weight: 600;
+  }
+  h1 { margin: 6px 0 4px; font-size: 32px; letter-spacing: -.02em; }
+  .status {
+    display: inline-block; background: var(--soft); color: var(--accent);
+    border: 1px solid #d7e2cd; border-radius: 999px; padding: 2px 12px;
+    font-size: 13px; font-weight: 600; margin-top: 8px;
+  }
+  .lede { font-size: 17px; color: #374151; margin: 18px 0 0; }
+  .expansion {
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 10px; padding: 14px 18px; margin: 22px 0; font-size: 15px;
+  }
+  .expansion b { color: var(--accent); }
+  h2 { font-size: 20px; margin: 34px 0 10px; }
+  .diagram { display: block; width: 100%; height: auto; margin: 8px 0 4px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 16px; }
+  .tab {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 999px; padding: 7px 14px; font-size: 14px; cursor: pointer; font-weight: 500;
+  }
+  .tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .panel { display: none; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .panel.active { display: block; }
+  .panel h3 { margin: 0 0 10px; font-size: 17px; }
+  .panel p { margin: 8px 0; }
+  ul.criteria { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.criteria li { position: relative; padding: 5px 0 5px 26px; border-top: 1px dashed var(--line); font-size: 14.5px; }
+  ul.criteria li::before { content: "☐"; position: absolute; left: 2px; color: var(--muted); }
+  .tag { display: inline-block; border-radius: 6px; padding: 1px 8px; font-size: 12px; font-weight: 600; margin-right: 6px; }
+  .tag.g { background:#e8f3e4; color: var(--accent); }
+  .tag.y { background:#fbf0d2; color:#9a6f00; }
+  .tag.r { background:#f8e3e3; color: var(--red); }
+  .note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  footer { margin-top: 40px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Product Requirements Document</div>
+    <h1>Leet Years</h1>
+    <span class="status">status: approved</span>
+    <p class="lede">A web app that replays a LeetCode user's practice history as an animated, difficulty-colored heatmap. Canonical source: <code>devpost/prd.md</code>.</p>
+  </header>
+
+  <div class="expansion">
+    <b>What changed from scope:</b> "the replay colors the grid in" is now pinned down — one year shown at a time with a whole-grid card flip between years; colors are a continuous green→yellow→red blend keyed to average difficulty (hard = 2× medium), not three buckets; the popup's "2 seconds or something" became 0.5s; and the undefined playback/error behaviors now have exact answers.
+  </div>
+
+  <h2>The journey</h2>
+  <svg class="diagram" viewBox="0 0 860 300" role="img" aria-label="Journey diagram: landing to lookup to replay (with year loop) to end, plus conditional controls">
+    <defs>
+      <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#6b7280"/>
+      </marker>
+    </defs>
+    <!-- nodes -->
+    <g>
+      <rect x="10"  y="40" width="150" height="64" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="85"  y="66" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">1 · Landing</text>
+      <text x="85"  y="84" text-anchor="middle" font-size="11" fill="#6b7280">title, welcome,</text>
+      <text x="85"  y="98" text-anchor="middle" font-size="11" fill="#6b7280">input, Start</text>
+
+      <rect x="200" y="40" width="150" height="64" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="275" y="66" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">2 · Lookup</text>
+      <text x="275" y="84" text-anchor="middle" font-size="11" fill="#6b7280">read public</text>
+      <text x="275" y="98" text-anchor="middle" font-size="11" fill="#6b7280">practice history</text>
+
+      <rect x="390" y="40" width="180" height="64" rx="10" fill="#e8f3e4" stroke="#c9e0bf"/>
+      <text x="480" y="66" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">3 · Replay (a year)</text>
+      <text x="480" y="84" text-anchor="middle" font-size="11" fill="#4b5563">cells flip day by day,</text>
+      <text x="480" y="98" text-anchor="middle" font-size="11" fill="#4b5563">popup ~0.5s each</text>
+
+      <rect x="610" y="40" width="150" height="64" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="685" y="66" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">4 · Next year?</text>
+      <text x="685" y="84" text-anchor="middle" font-size="11" fill="#6b7280">whole grid flips,</text>
+      <text x="685" y="98" text-anchor="middle" font-size="11" fill="#6b7280">cells reset grey</text>
+
+      <rect x="800" y="40" width="52" height="64" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="826" y="78" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">End</text>
+
+      <!-- controls branch -->
+      <rect x="390" y="180" width="180" height="58" rx="10" fill="#fbf0d2" stroke="#ecd9a0"/>
+      <text x="480" y="204" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">Controls (if &gt; ~20s)</text>
+      <text x="480" y="221" text-anchor="middle" font-size="11" fill="#4b5563">play/pause + seek (jump)</text>
+
+      <!-- main arrows -->
+      <line x1="160" y1="72" x2="196" y2="72" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="350" y1="72" x2="386" y2="72" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="570" y1="72" x2="606" y2="72" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="760" y1="72" x2="796" y2="72" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="803" y="32" text-anchor="end" font-size="11" fill="#6b7280">no</text>
+
+      <!-- loop back: from "Next year?" back to "Replay" -->
+      <path d="M 685 104 L 685 160 L 480 160 L 480 108" fill="none" stroke="#4f8a3b" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="582" y="152" text-anchor="middle" font-size="11" fill="#4f8a3b">yes — next year</text>
+
+      <!-- controls link -->
+      <line x1="480" y1="104" x2="480" y2="176" stroke="#b8860b" stroke-width="1.2" stroke-dasharray="3 3"/>
+    </g>
+  </svg>
+
+  <div class="tabs">
+    <button class="tab active" onclick="show('journey')">Journey</button>
+    <button class="tab" onclick="show('lookup')">Landing &amp; Lookup</button>
+    <button class="tab" onclick="show('replay')">Replay &amp; Popup</button>
+    <button class="tab" onclick="show('years')">Year Transition &amp; End</button>
+    <button class="tab" onclick="show('controls')">Controls</button>
+    <button class="tab" onclick="show('states')">Empty &amp; Error States</button>
+    <button class="tab" onclick="show('decisions')">Decisions &amp; Boundary</button>
+  </div>
+
+  <div class="panel active" id="panel-journey">
+    <h3>The core journey</h3>
+    <p>One page, one loop. The visitor lands, enters a public LeetCode username, and watches their practice history replay year by year. That's the whole product.</p>
+    <ol style="font-size:14.5px">
+      <li>Land on the title, welcome line, input, and a <b>Start</b> button.</li>
+      <li>Type a username, press Start.</li>
+      <li>The landing gives way to a ~365-cell light-grey grid; the year label shows the earliest year with activity.</li>
+      <li>Cells fill in date order, each a vertical card flip, colored by that day's average difficulty.</li>
+      <li>A popup lists each day's problems with difficulty dots for ~0.5s, then the next day fills.</li>
+      <li>When the year is done, the whole grid flips to the next year — label advances, cells reset grey.</li>
+      <li>Repeat until the final year; then the replay ends (Play restarts, if controls are shown).</li>
+    </ol>
+  </div>
+
+  <div class="panel" id="panel-lookup">
+    <h3>Landing &amp; Lookup</h3>
+    <p>The visitor enters a public LeetCode username and presses Start. The app reads that user's practice calendar.</p>
+    <ul class="criteria">
+      <li>Landing shows title, welcome line, input, and Start.</li>
+      <li>Submitting a valid username replaces the landing with a ~365-cell light-grey grid; label = earliest year with data.</li>
+    </ul>
+    <p class="note">Data source is a <code>4-spec</code> concern (see <code>scope.md &gt; Notes</code>); the PRD only defines what the visitor experiences.</p>
+  </div>
+
+  <div class="panel" id="panel-replay">
+    <h3>Replay &amp; Popup</h3>
+    <p>Cells fill in date order, earliest active day first, each via a vertical card flip. Days with no solved problems stay light grey and are skipped.</p>
+    <p>Color &nbsp;<span class="tag g">easy = 1</span><span class="tag y">medium = 2</span><span class="tag r">hard = 4</span> — a day's color is the continuous blend at its <b>average</b> difficulty score (hard counts twice medium). A popup beside each newly-filled cell lists its problem titles with per-problem difficulty dots, auto-dismissing after ~0.5s.</p>
+    <ul class="criteria">
+      <li>Active days fill in date order, each a card flip, with the blended average-difficulty color.</li>
+      <li>A popup beside each new cell lists titles + difficulty dots, clearing after ~0.5s.</li>
+      <li>Hovering a filled cell re-shows its popup.</li>
+      <li>No-data days remain grey and are skipped.</li>
+    </ul>
+  </div>
+
+  <div class="panel" id="panel-years">
+    <h3>Year transition &amp; end</h3>
+    <p>After a year's last active day, the whole grid does one vertical card flip — the same flip as individual cells. The year label advances, all cells reset to light grey, and the replay resumes. It continues through the final year with data, then stops.</p>
+    <ul class="criteria">
+      <li>After a year's last active day, the whole grid card-flips to the next year (label updates, cells reset grey) and continues.</li>
+      <li>The replay ends after the final year's last active day.</li>
+    </ul>
+  </div>
+
+  <div class="panel" id="panel-controls">
+    <h3>Controls (conditional)</h3>
+    <p>Shown <b>only when the replay lasts more than ~20s</b> (≈ over 40 active days, estimated as active days × 0.5s). One toggle button (play ↔ pause; after the end, it restarts from the earliest year). Above it, a seek bar — a thin bar with a round handle; dragging <b>jumps straight to the state at that point</b> (no scrub animation) and resumes from there.</p>
+    <ul class="criteria">
+      <li>Controls appear only for histories longer than ~20s.</li>
+      <li>Play/pause toggles; play after end restarts.</li>
+      <li>Seek bar jumps to a point and resumes from there.</li>
+    </ul>
+    <p class="note">No speed control, no skip-year button — the seek bar covers both.</p>
+  </div>
+
+  <div class="panel" id="panel-states">
+    <h3>Empty &amp; error states</h3>
+    <p>In every failure case the heatmap is <b>not</b> shown, and the input stays so the visitor can correct or retry.</p>
+    <ul class="criteria">
+      <li>Nonexistent username → <em>"Sorry, this username doesn't exist."</em></li>
+      <li>Existing user, zero solves → <em>"Sorry, this user hasn't solved any problems yet."</em></li>
+      <li>Data load failure → <em>"Sorry, we couldn't load the data right now — please try again."</em></li>
+    </ul>
+  </div>
+
+  <div class="panel" id="panel-decisions">
+    <h3>Decisions &amp; boundary</h3>
+    <p><b>Product decisions (learner's):</b> name "Leet Years"; one-year-per-view with a whole-grid card flip; continuous color blend (rejected three buckets and orange-as-medium); 0.5s popup with hover re-inspect; adaptive controls past ~20s; minimal play/pause + seek that jumps; friendly "Sorry…" errors; minimal-but-friendly look.</p>
+    <p><b>Building now:</b> the loop above and nothing else.</p>
+    <p><b>Deferred:</b> speed control, skip-year buttons, persistence, sharing — none are in the proof of concept.</p>
+    <p><b>Non-goals:</b> accounts, login, storage, writing to LeetCode, social features, or any metric beyond difficulty-colored presence.</p>
+  </div>
+
+  <footer>
+    This HTML is a review companion to <code>devpost/prd.md</code>, which remains canonical. Regenerate this file if the Markdown changes. All content is self-contained and works offline (inline SVG, no CDN).
+  </footer>
+</div>
+
+<script>
+  function show(id) {
+    var panels = document.querySelectorAll('.panel');
+    panels.forEach(function (p) { p.classList.remove('active'); });
+    var tabs = document.querySelectorAll('.tab');
+    tabs.forEach(function (t) { t.classList.remove('active'); });
+    document.getElementById('panel-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>

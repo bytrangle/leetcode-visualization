@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scope — LeetCode Practice Visualizer</title>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#1f2328; --muted:#59636e; --line:#d8dee4; --soft:#f6f8fa;
+    --grey:#ebedf0; --green:#2da44e; --yellow:#d4a72c; --red:#cf222e; --accent:#0969da;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:48px 24px 80px}
+  header{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:40px}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{font-size:34px;line-height:1.15;margin:12px 0 10px;letter-spacing:-.02em}
+  .lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:60ch}
+  .pills{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--soft)}
+  .pill.draft{border-color:#d4a72c;color:#7a5c00;background:#fff8e5}
+  .pill.published{border-color:#2da44e;color:#1a7f37;background:#dafbe1}
+  section{margin-bottom:52px}
+  h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;
+     margin:0 0 18px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:17px;margin:0 0 8px;letter-spacing:-.01em}
+  p{margin:0 0 12px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .card .num{font:700 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);margin-bottom:12px}
+  .card p:last-child{margin-bottom:0}
+  .aside{font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px;margin-top:14px}
+  blockquote{margin:20px 0 0;padding:14px 18px;border-left:3px solid var(--grey);
+             background:var(--soft);border-radius:0 8px 8px 0;font-size:15px;color:var(--muted)}
+  blockquote cite{display:block;font-style:normal;font-size:12px;text-transform:uppercase;
+                  letter-spacing:.06em;margin-top:6px;color:#8b949e}
+  .diagram{width:100%;height:auto;display:block;margin:0 auto}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:16px;justify-content:center}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+  /* stepper */
+  .stepper{background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .step{display:none}
+  .step.on{display:block}
+  .step .k{font:700 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);letter-spacing:.04em}
+  .step h3{margin:10px 0 6px;font-size:19px}
+  .step p{color:var(--muted);margin:0}
+  .ctrl{display:flex;align-items:center;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  button{font:inherit;font-size:14px;padding:7px 14px;border-radius:7px;border:1px solid var(--line);
+         background:#fff;color:var(--ink);cursor:pointer;font-weight:500}
+  button:hover:not(:disabled){border-color:var(--muted)}
+  button:disabled{opacity:.4;cursor:default}
+  .count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .bar{flex:1;height:4px;background:var(--line);border-radius:99px;overflow:hidden;min-width:40px}
+  .bar span{display:block;height:100%;background:var(--accent);width:12.5%;transition:width .2s}
+
+  details{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+  summary{padding:14px 18px;cursor:pointer;font-weight:600;font-size:15px;background:var(--soft);
+          display:flex;justify-content:space-between;align-items:center;gap:12px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--muted);font-weight:400;font-size:20px;line-height:1}
+  details[open] summary::after{content:"–"}
+  details[open] summary{border-bottom:1px solid var(--line)}
+  .body{padding:18px}
+  .body p:last-child{margin-bottom:0}
+  .tag{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+  .tag.in{background:#dafbe1;color:#1a7f37}
+  .tag.later{background:#ddf4ff;color:#0969da}
+  .tag.cut{background:#ffeef0;color:#cf222e}
+  ul{margin:0;padding-left:20px}
+  li{margin-bottom:9px}
+  li:last-child{margin-bottom:0}
+  li::marker{color:#8b949e}
+  footer{border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted)}
+  code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);
+       border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Devpost Learn · Build With AI: Basics · 2-scope</div>
+  <h1>LeetCode Practice Visualizer</h1>
+  <p class="lede">A web app that replays your LeetCode practice history as an animated, difficulty-colored heatmap.</p>
+  <div class="pills">
+    <span class="pill published">status · approved</span>
+    <span class="pill">working title — not yet named</span>
+  </div>
+</header>
+
+<section>
+  <h2>The Unique Kernel</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="num">01</div>
+      <h3>It's a replay, not a picture</h3>
+      <p>The GitHub contribution graph is static. This unfolds a history chronologically — day by day through a year, then year after year until the history runs out, each day filling in as the replay reaches it.</p>
+      <p class="aside">Strip the animation and you're left with a static heatmap that already exists in the world.</p>
+    </div>
+    <div class="card">
+      <div class="num">02</div>
+      <h3>Color answers a different question</h3>
+      <p>GitHub's grid says <strong>how much</strong> did you do. This says <strong>how hard</strong> was what you did — each day weighted by the average difficulty of the problems solved in it, not by their count.</p>
+      <p class="aside">Strip the difficulty weighting and you're left with GitHub's grid, for LeetCode.</p>
+    </div>
+  </div>
+  <blockquote>
+    “you put it into words better than I can”
+    <cite>learner, confirming the kernel</cite>
+  </blockquote>
+</section>
+
+<section>
+  <h2>User → Core Loop → Proof</h2>
+  <svg class="diagram" viewBox="0 0 820 300" role="img"
+       aria-label="Flow: a visitor enters a LeetCode username, a year of grey cells appears, days fill in one by one with a popup, then the next year begins and the loop repeats until the last year with data.">
+    <defs>
+      <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#8b949e"/>
+      </marker>
+      <marker id="aloop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#0969da"/>
+      </marker>
+    </defs>
+
+    <!-- node: landing -->
+    <rect x="16" y="112" width="132" height="72" rx="10" fill="#f6f8fa" stroke="#d8dee4"/>
+    <text x="82" y="140" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1f2328">Landing</text>
+    <text x="82" y="158" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">title + welcome</text>
+    <text x="82" y="173" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">username input</text>
+
+    <line x1="152" y1="148" x2="186" y2="148" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <!-- node: year grid -->
+    <rect x="190" y="96" width="176" height="104" rx="10" fill="#ffffff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="278" y="116" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1f2328">A year of cells</text>
+    <text x="278" y="132" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">365, all light grey</text>
+    <!-- mini heatmap strip -->
+    <g transform="translate(216,148)">
+      <rect x="0"  y="0"  width="10" height="10" rx="2" fill="#ebedf0"/>
+      <rect x="13" y="0"  width="10" height="10" rx="2" fill="#2da44e"/>
+      <rect x="26" y="0"  width="10" height="10" rx="2" fill="#ebedf0"/>
+      <rect x="39" y="0"  width="10" height="10" rx="2" fill="#d4a72c"/>
+      <rect x="52" y="0"  width="10" height="10" rx="2" fill="#ebedf0"/>
+      <rect x="65" y="0"  width="10" height="10" rx="2" fill="#cf222e"/>
+      <rect x="78" y="0"  width="10" height="10" rx="2" fill="#2da44e"/>
+      <rect x="91" y="0"  width="10" height="10" rx="2" fill="#ebedf0"/>
+      <rect x="104" y="0" width="10" height="10" rx="2" fill="#d4a72c"/>
+      <rect x="117" y="0" width="10" height="10" rx="2" fill="#ebedf0"/>
+      <rect x="0"  y="15" width="10" height="10" rx="2" fill="#2da44e"/>
+      <rect x="13" y="15" width="10" height="10" rx="2" fill="#ebedf0"/>
+      <rect x="26" y="15" width="10" height="10" rx="2" fill="#cf222e"/>
+      <rect x="39" y="15" width="10" height="10" rx="2" fill="#ebedf0"/>
+      <rect x="52" y="15" width="10" height="10" rx="2" fill="#2da44e"/>
+    </g>
+    <text x="278" y="190" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">earliest year with data</text>
+
+    <line x1="366" y1="148" x2="400" y2="148" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <!-- node: day replay -->
+    <rect x="404" y="96" width="176" height="104" rx="10" fill="#ffffff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="492" y="118" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1f2328">Day-by-day replay</text>
+    <text x="492" y="136" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">grey → final color</text>
+    <text x="492" y="152" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">like a cube flipping</text>
+    <text x="492" y="176" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">popup: that day's problems</text>
+    <text x="492" y="190" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#59636e">+ a difficulty dot each</text>
+
+    <line x1="580" y1="148" x2="614" y2="148" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <!-- node: done -->
+    <rect x="618" y="112" width="186" height="72" rx="10" fill="#dafbe1" stroke="#2da44e" stroke-width="1.5"/>
+    <text x="711" y="140" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1a7f37">Last year with data</text>
+    <text x="711" y="158" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1a7f37">the proof, on screen</text>
+    <text x="711" y="173" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1a7f37">in under a minute</text>
+
+    <!-- loop back -->
+    <path d="M 492 200 L 492 258 L 278 258 L 278 204" fill="none" stroke="#0969da" stroke-width="1.5"
+          stroke-dasharray="5 4" marker-end="url(#aloop)"/>
+    <text x="385" y="276" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0969da">
+      next year with data — cells reset to grey, replay again
+    </text>
+  </svg>
+
+  <div class="legend">
+    <span><i style="background:#ebedf0"></i>no practice that day</span>
+    <span><i style="background:#2da44e"></i>easy average</span>
+    <span><i style="background:#d4a72c"></i>medium average</span>
+    <span><i style="background:#cf222e"></i>hard average</span>
+  </div>
+</section>
+
+<section>
+  <h2>What “Working” Looks Like</h2>
+  <div class="stepper">
+    <div class="step on"><div class="k">STEP 1 / 8</div><h3>Landing page</h3><p>A title, a welcome message, and an input for the visitor's LeetCode username.</p></div>
+    <div class="step"><div class="k">STEP 2 / 8</div><h3>Welcome message clears</h3><p>On submit, it disappears and a heatmap of 365 cells appears — every cell light grey.</p></div>
+    <div class="step"><div class="k">STEP 3 / 8</div><h3>The year is chosen</h3><p>The displayed year is the earliest year with practice data for that username. The label sits above the grid.</p></div>
+    <div class="step"><div class="k">STEP 4 / 8</div><h3>The replay begins</h3><p>It starts at that year's earliest day with practice data and fills the cell with the color for that day's average difficulty.</p></div>
+    <div class="step"><div class="k">STEP 5 / 8</div><h3>The cube flip</h3><p>The cell transitions from light grey to its final color — the learner's words: “it will look like someone flips a cube.”</p></div>
+    <div class="step"><div class="k">STEP 6 / 8</div><h3>Through to the year's end</h3><p>It continues, day by day, to the last day of that year that has data. Days with no practice stay grey and are skipped.</p></div>
+    <div class="step"><div class="k">STEP 7 / 8</div><h3>Next year</h3><p>Every cell resets to light grey and the process repeats for the next year with data.</p></div>
+    <div class="step"><div class="k">STEP 8 / 8</div><h3>The finish line</h3><p>It repeats until the final year with data. That whole run is the proof — and it has to be showable in about a minute.</p></div>
+    <div class="ctrl">
+      <button id="prev">← Back</button>
+      <span class="count" id="count">1 / 8</span>
+      <div class="bar"><span id="bar"></span></div>
+      <button id="next">Next →</button>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The Boundary</h2>
+  <details open>
+    <summary><span><span class="tag in">In</span>&nbsp; The POC boundary</span></summary>
+    <div class="body">
+      <p>Exactly the flow above, and nothing else. Asked what to cut, the learner's answer was that everything described is the whole thing.</p>
+      <p>That makes this an unusually tight scope. Arriving at a precise, demonstrable, single-loop proof of concept is normally the hard work of this conversation — and it was already done before we started.</p>
+      <p>Every element is load-bearing: the <strong>replay</strong> is the kernel; <strong>difficulty-colored cells</strong> are the other half of it; the <strong>popup listing that day's problems</strong> is what makes the color legible; and <strong>hover to re-show a past popup</strong> is how a visitor inspects anything once the replay has moved on.</p>
+      <p>Submission needs a demo video and a public GitHub repository. Deployment is optional and replaces neither.</p>
+    </div>
+  </details>
+  <details>
+    <summary><span><span class="tag later">Later</span>&nbsp; Worth doing, not now</span></summary>
+    <div class="body"><p>None named by the learner.</p></div>
+  </details>
+  <details>
+    <summary><span><span class="tag cut">Cut</span>&nbsp; Explicitly removed</span></summary>
+    <div class="body">
+      <p>None — and that's a finding rather than an omission.</p>
+      <p>Nothing was cut because nothing beyond the described flow was proposed. The proof of concept is small enough that no proposed feature needed removing to protect it.</p>
+      <p>Two things follow. The pressure to add will arrive during <code>5-build</code>, not now, and it will feel reasonable at the time — this section is the record that it wasn't part of the plan. And several behaviors a visitor expects were never proposed at all: those are <strong>unaddressed, not cut</strong>.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2>Notes — observed, not decided</h2>
+  <ul>
+    <li><strong>Data source.</strong> <code>leetcode-api-pied.vercel.app/user/{username}/calendar</code> — a third-party, unofficially-hosted API, not one run by LeetCode. No SLA; it may change or vanish. The learner's position: <em>“we may have to use other APIs if necessary.”</em> <code>4-spec</code> treats this as a known dependency risk and designs a fallback.</li>
+    <li><strong>Playback control was never raised.</strong> Pause, restart, speed, skip-a-year — undiscussed. <code>3-prd</code> should ask rather than assume either way.</li>
+    <li><strong>No-data and error behavior was never raised.</strong> What a visitor sees for a mistyped username, an account with no solves, or a failed API call is undefined.</li>
+    <li><strong>Popup timing is approximate.</strong> <em>“2 seconds or something”</em> — a placeholder, not a decision.</li>
+    <li><strong>Name unset.</strong> The project has no name yet; <code>3-prd</code> uses the learner's chosen name.</li>
+    <li><strong>Who It's For is a category, not a person.</strong> “LeetCode users who have solved problems” is a direction, not a picture. <code>3-prd</code> can sharpen it.</li>
+  </ul>
+</section>
+
+<footer>
+  Markdown stays canonical — this page is a companion, regenerated after revisions.
+  Source: <code>devpost/scope.md</code>
+</footer>
+
+</div>
+
+<script>
+  (function(){
+    var steps = document.querySelectorAll('.step');
+    var bar = document.getElementById('bar');
+    var count = document.getElementById('count');
+    var prev = document.getElementById('prev');
+    var next = document.getElementById('next');
+    var i = 0;
+    function render(){
+      steps.forEach(function(s, n){ s.classList.toggle('on', n === i); });
+      count.textContent = (i + 1) + ' / ' + steps.length;
+      bar.style.width = ((i + 1) / steps.length * 100) + '%';
+      prev.disabled = (i === 0);
+      next.disabled = (i === steps.length - 1);
+    }
+    prev.addEventListener('click', function(){ if(i > 0){ i--; render(); } });
+    next.addEventListener('click', function(){ if(i < steps.length - 1){ i++; render(); } });
+    render();
+  })();
+</script>
+</body>
+</html>

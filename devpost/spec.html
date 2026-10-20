@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leet Years — Technical Spec</title>
+<style>
+  :root {
+    --bg: #fafaf7; --ink: #1c1e21; --muted: #6b7280; --line: #e5e7eb;
+    --card: #ffffff; --accent: #4f8a3b; --soft: #f0f3ec; --code: #f4f4f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.6;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+  header .kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; color: var(--muted); font-weight: 600; }
+  h1 { margin: 6px 0 4px; font-size: 30px; letter-spacing: -.02em; }
+  .status { display: inline-block; background: var(--soft); color: var(--accent); border: 1px solid #d7e2cd; border-radius: 999px; padding: 2px 12px; font-size: 13px; font-weight: 600; margin-top: 8px; }
+  .lede { font-size: 16px; color: #374151; margin: 16px 0 0; }
+  .expansion { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 14px 18px; margin: 22px 0; font-size: 15px; }
+  h2 { font-size: 20px; margin: 32px 0 10px; }
+  .diagram { display: block; width: 100%; height: auto; margin: 8px 0 4px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 14px; }
+  .tab { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 7px 14px; font-size: 13.5px; cursor: pointer; font-weight: 500; }
+  .tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .panel { display: none; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .panel.active { display: block; }
+  .panel h3 { margin: 0 0 8px; font-size: 16.5px; }
+  .panel p { margin: 8px 0; font-size: 14.5px; }
+  .file { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; background: var(--code); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+  .ref { color: var(--muted); font-size: 13px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 13px; }
+  ul.tight { margin: 8px 0; padding-left: 20px; font-size: 14.5px; }
+  ul.tight li { margin: 4px 0; }
+  footer { margin-top: 40px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Technical Specification</div>
+    <h1>Leet Years</h1>
+    <span class="status">status: approved</span>
+    <p class="lede">A self-hosted tool that replays your own LeetCode practice history as a difficulty-colored heatmap. Canonical source: <code>devpost/spec.md</code>.</p>
+  </header>
+
+  <div class="expansion">
+    <b>The architecture in one line:</b> a <b>Node CLI + local server</b> (Node/TypeScript + Express) fetches your full submissions through <code>leetcode-query</code> using your own session cookie, transforms them, and serves a <b>React</b> player that runs the replay. The cookie stays server-side and in-process — never in the browser, never with a third party.
+  </div>
+
+  <h2>How data flows</h2>
+  <svg class="diagram" viewBox="0 0 880 340" role="img" aria-label="Data flow: terminal to CLI to leetcode-query to LeetCode GraphQL, then transform to local server to React player in the browser">
+    <defs>
+      <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#6b7280"/></marker>
+    </defs>
+
+    <!-- row 1: fetch path -->
+    <rect x="10"  y="30" width="150" height="70" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="85"  y="56" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">You (terminal)</text>
+    <text x="85"  y="76" text-anchor="middle" font-size="11" fill="#6b7280">paste session cookie</text>
+
+    <rect x="200" y="30" width="150" height="70" rx="10" fill="#e8f3e4" stroke="#c9e0bf"/>
+    <text x="275" y="56" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">CLI</text>
+    <text x="275" y="76" text-anchor="middle" font-size="11" fill="#4b5563">bin/cli.ts · prompts, runs server</text>
+
+    <rect x="390" y="30" width="160" height="70" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="470" y="56" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">leetcode-query</text>
+    <text x="470" y="76" text-anchor="middle" font-size="11" fill="#6b7280">server/leetcode.ts</text>
+
+    <rect x="590" y="30" width="180" height="70" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="680" y="56" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">LeetCode GraphQL</text>
+    <text x="680" y="76" text-anchor="middle" font-size="11" fill="#6b7280">full submission history</text>
+
+    <!-- row 2: serve path -->
+    <rect x="200" y="200" width="150" height="70" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="275" y="226" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">transform.ts</text>
+    <text x="275" y="246" text-anchor="middle" font-size="11" fill="#6b7280">submissions → years/days</text>
+
+    <rect x="390" y="200" width="160" height="70" rx="10" fill="#e8f3e4" stroke="#c9e0bf"/>
+    <text x="470" y="226" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">Local Express server</text>
+    <text x="470" y="246" text-anchor="middle" font-size="11" fill="#4b5563">server/http.ts</text>
+
+    <rect x="590" y="200" width="180" height="70" rx="10" fill="#fbf0d2" stroke="#ecd9a0"/>
+    <text x="680" y="226" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1c1e21">React player (browser)</text>
+    <text x="680" y="246" text-anchor="middle" font-size="11" fill="#4b5563">localhost · /api/submissions</text>
+
+    <!-- arrows -->
+    <line x1="160" y1="65" x2="196" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="350" y1="65" x2="386" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="550" y1="65" x2="586" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+    <path d="M 470 100 L 470 160 L 275 160 L 275 196" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="350" y1="235" x2="386" y2="235" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="550" y1="235" x2="586" y2="235" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="392" y="150" text-anchor="middle" font-size="11" fill="#6b7280">on success</text>
+  </svg>
+
+  <h2>Components, by PRD behavior</h2>
+  <div class="tabs">
+    <button class="tab active" onclick="show('auth')">Setup &amp; Auth</button>
+    <button class="tab" onclick="show('data')">Data &amp; Server</button>
+    <button class="tab" onclick="show('player')">Player</button>
+    <button class="tab" onclick="show('heatmap')">Heatmap &amp; Years</button>
+    <button class="tab" onclick="show('popup')">Popup &amp; Controls</button>
+    <button class="tab" onclick="show('decisions')">Decisions &amp; Risks</button>
+  </div>
+
+  <div class="panel active" id="panel-auth">
+    <h3>Setup &amp; authentication</h3>
+    <p><span class="file">bin/cli.ts</span> reads args (<code>--demo</code>), prompts for the cookie (or reads <code>LEETCODE_SESSION</code>), then orchestrates the run. <span class="file">server/leetcode.ts</span> holds the cookie and fetches submissions.</p>
+    <p class="ref">PRD ref: <code>prd.md &gt; Setup &amp; authentication</code></p>
+    <ul class="tight">
+      <li>Prompt: masked input, cookie held <b>in-process only</b>.</li>
+      <li>Failure → terminal message + exit, no browser.</li>
+    </ul>
+  </div>
+
+  <div class="panel" id="panel-data">
+    <h3>Data &amp; server</h3>
+    <p><span class="file">server/transform.ts</span> builds the <code>years → days → problems</code> shape. <span class="file">server/http.ts</span> serves <code>/api/submissions</code> + the built frontend, then opens the browser. <span class="file">server/sampleData.ts</span> backs <code>--demo</code>.</p>
+    <p class="ref">PRD ref: <code>prd.md &gt; Replay</code>, <code>prd.md &gt; The Core Journey</code></p>
+    <pre>{
+  years: [ { label: 2021, days: [
+      { date: "2021-03-04", problems: [ { title: "Two Sum", difficulty: "Easy" } ] }
+  ] } ]
+}</pre>
+  </div>
+
+  <div class="panel" id="panel-player">
+    <h3>Player</h3>
+    <p><span class="file">src/App.tsx</span> fetches <code>/api/submissions</code> once, then holds the replay state (idle/playing/paused/ended + current year/day, seek). <span class="file">src/lib/replay.ts</span> owns the timeline/seek logic.</p>
+    <p class="ref">PRD ref: <code>prd.md &gt; Replay</code>, <code>prd.md &gt; Controls</code></p>
+  </div>
+
+  <div class="panel" id="panel-heatmap">
+    <h3>Heatmap &amp; year transitions</h3>
+    <p><span class="file">src/components/Heatmap.tsx</span> renders the 7×~53 grid and drives the whole-grid card flip. <span class="file">src/components/Cell.tsx</span> is one day (grey→color flip + hover). <span class="file">src/lib/colors.ts</span> maps difficulty → score (1/2/4) → gradient color.</p>
+    <p class="ref">PRD ref: <code>prd.md &gt; Year transition</code>, <code>prd.md &gt; Look and Feel</code></p>
+  </div>
+
+  <div class="panel" id="panel-popup">
+    <h3>Popup &amp; controls</h3>
+    <p><span class="file">src/components/Popup.tsx</span> lists a day's problems with difficulty dots. <span class="file">src/components/Controls.tsx</span> is the play/pause toggle (always shown) + seek bar (shown only when history &gt; ~20s).</p>
+    <p class="ref">PRD ref: <code>prd.md &gt; Popup</code>, <code>prd.md &gt; Controls</code></p>
+  </div>
+
+  <div class="panel" id="panel-decisions">
+    <h3>Decisions &amp; risks</h3>
+    <p><b>Learner choices:</b> React; TypeScript; self-hosted <code>npx</code> CLI + local server; session-cookie auth through <code>leetcode-query</code>.</p>
+    <p><b>Derived details:</b> Express, Vite, file layout, <code>--demo</code> sample mode, transform shape.</p>
+    <p><b>Worked through:</b> "Is pasting my session cookie good practice?" → yes, <em>only</em> for a self-hosted personal tool; the local server keeps it out of the browser.</p>
+    <p><b>Verify first in build:</b> <code>leetcode-query</code> still returns full submissions (title + difficulty + timestamp) from current LeetCode GraphQL.</p>
+  </div>
+
+  <h2>Run it</h2>
+  <ul class="tight">
+    <li><code>npm install</code> then <code>npm run dev</code> (develop).</li>
+    <li><code>npm run build &amp;&amp; npm start</code> → paste cookie → browser opens.</li>
+    <li><code>npm start -- --demo</code> → labeled sample data, no cookie.</li>
+    <li>No deployment — a cookie-authenticated tool is local by design. Demo = screen-record your own replay.</li>
+  </ul>
+
+  <h2>Failure modes (the ones that matter)</h2>
+  <ul class="tight">
+    <li>Bad/expired cookie → "Couldn't authenticate — check your session cookie." + exit.</li>
+    <li>LeetCode down/rate-limited → "Couldn't reach LeetCode — try again." + exit.</li>
+    <li>No solved problems → "This account hasn't solved any problems yet." + exit.</li>
+    <li><code>leetcode-query</code> broken → <code>--demo</code> (labeled), never fake live data.</li>
+  </ul>
+
+  <footer>
+    This HTML is a review companion to <code>devpost/spec.md</code>, which remains canonical. Regenerate after revisions. Self-contained and offline (inline SVG, no CDN).
+  </footer>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+    document.getElementById('panel-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
