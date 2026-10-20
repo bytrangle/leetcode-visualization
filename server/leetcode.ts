@@ -57,7 +57,8 @@ export async function fetchAcceptedSubmissions(
     console.log(`Scanned ${scanned} submissions…`)
     for (const s of page) {
       if (s.statusDisplay === 'Accepted') {
-        raw.push({ title: s.title, titleSlug: s.titleSlug, timestamp: s.timestamp })
+        // leetcode-query returns milliseconds despite its type comment; our shape uses seconds.
+        raw.push({ title: s.title, titleSlug: s.titleSlug, timestamp: s.timestamp / 1000 })
       }
     }
     if (page.length < 20) break
