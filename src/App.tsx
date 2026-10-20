@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Controls from './components/Controls'
 import Heatmap from './components/Heatmap'
+import Legend from './components/Legend'
 import Title from './components/Title'
 import YearLabel from './components/YearLabel'
 import { useReplay } from './lib/replay'
@@ -34,6 +35,7 @@ export default function App() {
         Press Play to begin.
       </p>
       <YearLabel label={year.label} />
+      <Legend />
       <Heatmap year={year} dayIndex={dayIndex} phase={phase} />
       <Controls
         phase={phase}

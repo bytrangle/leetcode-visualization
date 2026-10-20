@@ -145,6 +145,27 @@ body {
   align-items: center;
 }
 
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
 /* Cell + vertical card flip */
 .cell {
   width: var(--cell-size);
