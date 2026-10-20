@@ -30,3 +30,13 @@ export function dayColor(problems: { difficulty: Difficulty }[]): string {
   if (problems.length === 0) return GREY
   return averageColor(averageDifficulty(problems))
 }
+
+const DOT_COLORS: Record<Difficulty, string> = {
+  Easy: `rgb(${GREEN[0]}, ${GREEN[1]}, ${GREEN[2]})`,
+  Medium: `rgb(${YELLOW[0]}, ${YELLOW[1]}, ${YELLOW[2]})`,
+  Hard: `rgb(${RED[0]}, ${RED[1]}, ${RED[2]})`,
+}
+
+export function difficultyDotColor(d: Difficulty): string {
+  return DOT_COLORS[d]
+}

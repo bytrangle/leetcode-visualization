@@ -33,7 +33,7 @@ export default function App() {
         Press Play to begin.
       </p>
       <YearLabel label={year.label} />
-      <Heatmap year={year} dayIndex={dayIndex} />
+      <Heatmap year={year} dayIndex={dayIndex} phase={phase} />
       <div className="controls">
         <button className="play-btn" onClick={toggle}>
           {phase === 'playing' ? 'Pause' : 'Play'}

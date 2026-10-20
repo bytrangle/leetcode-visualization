@@ -1,6 +1,10 @@
+import { useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Cell from './Cell'
+import Popup from './Popup'
 import { dayColor } from '../lib/colors'
 import type { Day, Year } from '../types'
+import type { Phase } from '../lib/replay'
 
 const WEEK_COLUMNS = 53
 const WEEK_ROWS = 7
@@ -35,9 +39,14 @@ function monthColumns(yearLabel: number): (string | null)[] {
 interface HeatmapProps {
   year: Year
   dayIndex: number
+  phase: Phase
 }
 
-export default function Heatmap({ year, dayIndex }: HeatmapProps) {
+export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null)
+  const [popup, setPopup] = useState<{ day: Day; x: number; y: number } | null>(null)
+
   const posToDay = new Map<string, { day: Day; index: number }>()
   for (let i = 0; i < year.days.length; i++) {
     const day = year.days[i]
@@ -45,16 +54,49 @@ export default function Heatmap({ year, dayIndex }: HeatmapProps) {
     posToDay.set(`${col}:${row}`, { day, index: i })
   }
 
+  // Which day the popup describes — hover wins over the replay's current day.
+  const replayDay =
+    (phase === 'playing' || phase === 'paused') && dayIndex >= 1 ? year.days[dayIndex - 1] : null
+  const hoveredDay = hoveredDate ? year.days.find((d) => d.date === hoveredDate) ?? null : null
+  const popupDay = hoveredDay ?? replayDay
+
+  useLayoutEffect(() => {
+    if (!popupDay) {
+      setPopup(null)
+      return
+    }
+    const grid = gridRef.current
+    if (!grid) return
+    const { col, row } = dayPosition(popupDay.date)
+    const cs = getComputedStyle(document.documentElement)
+    const cell = parseFloat(cs.getPropertyValue('--cell-size')) || 12
+    const gap = parseFloat(cs.getPropertyValue('--gap')) || 3
+    const r = grid.getBoundingClientRect()
+    setPopup({
+      day: popupDay,
+      x: r.left + (col + 0.5) * (cell + gap),
+      y: r.top + row * (cell + gap) - 6,
+    })
+  }, [popupDay])
+
   const cells = []
   for (let col = 0; col < WEEK_COLUMNS; col++) {
     for (let row = 0; row < WEEK_ROWS; row++) {
-      const hit = posToDay.get(`${col}:${row}`)
+      const key = `${col}:${row}`
+      const hit = posToDay.get(key)
       if (hit) {
+        const isFilled = dayIndex > hit.index
         cells.push(
-          <Cell key={`${col}:${row}`} color={dayColor(hit.day.problems)} filled={dayIndex > hit.index} />,
+          <Cell
+            key={key}
+            color={dayColor(hit.day.problems)}
+            filled={isFilled}
+            onMouseEnter={isFilled ? () => setHoveredDate(hit.day.date) : undefined}
+            onMouseLeave={isFilled ? () => setHoveredDate(null) : undefined}
+          />,
         )
       } else {
-        cells.push(<Cell key={`${col}:${row}`} filled={false} />)
+        cells.push(<Cell key={key} filled={false} />)
       }
     }
   }
@@ -62,24 +104,40 @@ export default function Heatmap({ year, dayIndex }: HeatmapProps) {
   const months = monthColumns(year.label)
 
   return (
-    <div className="heatmap-wrap">
-      <div className="heatmap-months">
-        {months.map((name, i) => (
-          <span key={i} className="month-label">
-            {name ?? ''}
-          </span>
-        ))}
-      </div>
-      <div className="heatmap-row">
-        <div className="heatmap-weekdays">
-          {WEEKDAY_LABELS.map((label, i) => (
-            <span key={i} className="weekday-label">
-              {label}
+    <>
+      <div className="heatmap-wrap">
+        <div className="heatmap-months">
+          {months.map((name, i) => (
+            <span key={i} className="month-label">
+              {name ?? ''}
             </span>
           ))}
         </div>
-        <div className="heatmap">{cells}</div>
+        <div className="heatmap-row">
+          <div className="heatmap-weekdays">
+            {WEEKDAY_LABELS.map((label, i) => (
+              <span key={i} className="weekday-label">
+                {label}
+              </span>
+            ))}
+          </div>
+          <div className="heatmap" ref={gridRef}>
+            {cells}
+          </div>
+        </div>
       </div>
-    </div>
+      {popup &&
+        createPortal(
+          <Popup
+            day={popup.day}
+            style={{
+              left: popup.x,
+              top: popup.y,
+              transform: 'translate(-50%, -100%)',
+            }}
+          />,
+          document.body,
+        )}
+    </>
   )
 }

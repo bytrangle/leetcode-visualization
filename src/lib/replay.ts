@@ -3,7 +3,7 @@ import type { History, Year } from '../types'
 
 export type Phase = 'idle' | 'playing' | 'paused' | 'ended'
 
-const DAY_STEP_MS = 500
+export const DAY_STEP_MS = 500
 
 export function useReplay(history: History | null) {
   const [phase, setPhase] = useState<Phase>('idle')
