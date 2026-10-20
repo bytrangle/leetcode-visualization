@@ -2,6 +2,8 @@
   --grey: #ebedf0;
   --cell-size: clamp(10px, 1.35vw, 22px);
   --gap: clamp(2px, 0.3vw, 4px);
+  --flip-origin-z: clamp(-5px, -0.675vw, -11px);
+  --flip-perspective: clamp(57.5px, 7.7625vw, 126.5px);
 }
 
 * {
@@ -102,7 +104,7 @@ body {
 }
 
 .flip-cell {
-  perspective: calc(var(--cell-size) * 5.75);
+  perspective: var(--flip-perspective);
 }
 
 .cell-face {
@@ -118,12 +120,12 @@ body {
 .initial-color {
   background: var(--grey);
   transform: rotateX(0deg);
-  transform-origin: 50% 50% calc(var(--cell-size) / -2);
+  transform-origin: 50% 50% var(--flip-origin-z);
 }
 
 .final-color {
   transform: rotateX(90deg);
-  transform-origin: 50% 50% calc(var(--cell-size) / -2);
+  transform-origin: 50% 50% var(--flip-origin-z);
 }
 
 .flip-cell.flipped .initial-color {
