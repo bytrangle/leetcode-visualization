@@ -49,7 +49,7 @@ Build mode: fast
   Learner check: Let a year finish and confirm the whole grid flips to the next year with the updated label and resets grey; confirm it ends after the final year.
   Commit: `Add year-to-year whole-grid flip`
 
-- [ ] **5. Seek bar (conditional) and restart**
+- [x] **5. Seek bar (conditional) and restart**
   Becomes usable: For long histories (>~20s / ~40 active days) a seek bar appears above the play button; dragging jumps straight to that point; play after the end restarts.
   Why now: Play/pause already exists from slice 2; this adds the "jump anywhere" control only once the replay loop is complete.
   PRD ref: `prd.md > Features and Behavior > Controls`

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k \"tsx bin/cli.ts --api-only\" \"vite\"",
+    "dev": "concurrently -k \"tsx bin/cli.ts --api-only --demo\" \"vite\"",
     "dev:long": "concurrently -k \"tsx bin/cli.ts --api-only --long\" \"vite\"",
     "build": "vite build",
     "start": "tsx bin/cli.ts",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "express": "^4.19.2",
+    "leetcode-query": "^2.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

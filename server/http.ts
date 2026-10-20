@@ -21,6 +21,10 @@ export function startServer(
   }
 
   return app.listen(port, () => {
-    console.log(`Leet Years → http://localhost:${port}`)
+    if (opts.staticDist !== false) {
+      console.log(`Fetching completed 🎉. Open http://localhost:${port} in your browser to watch your progress through the years`)
+    } else {
+      console.log(`Leet Years API → http://localhost:${port}`)
+    }
   })
 }
