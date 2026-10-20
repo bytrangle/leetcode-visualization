@@ -23,42 +23,9 @@ body {
 }
 
 .title {
-  display: flex;
-  justify-content: center;
-  white-space: nowrap;
-  font-size: clamp(3rem, 10vw, 6rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  margin: 4px 0;
-  padding-top: 1.2em;
-}
-
-.letter {
-  display: inline-block;
-  animation: drop-bounce 0.75s both;
-}
-
-.letter-space {
-  width: 0.26em;
-}
-
-@keyframes drop-bounce {
-  0% {
-    transform: translateY(-0.95em);
-    animation-timing-function: ease-in;
-  }
-  62% {
-    transform: translateY(0);
-    animation-timing-function: ease-out;
-  }
-  82% {
-    transform: translateY(-0.36em);
-    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-  }
-  100% {
-    transform: translateY(0);
-  }
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
 }
 
 .year-label {
