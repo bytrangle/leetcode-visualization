@@ -23,9 +23,45 @@ body {
 }
 
 .title {
-  font-size: 28px;
-  letter-spacing: -0.02em;
-  margin: 0 0 4px;
+  display: flex;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin: 4px 0;
+  padding-top: 1.2em;
+}
+
+.letter {
+  display: inline-block;
+  animation: drop-bounce 1.15s ease-in-out both;
+}
+
+.letter-space {
+  width: 0.26em;
+}
+
+@keyframes drop-bounce {
+  0% {
+    opacity: 0;
+    transform: translateY(-1.1em);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-0.12em);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-0.4em);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .year-label {
