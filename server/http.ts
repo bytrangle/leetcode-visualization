@@ -5,14 +5,20 @@ import type { History } from './transform'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-export function startServer(history: History, port: number) {
+export function startServer(
+  history: History,
+  port: number,
+  opts: { staticDist?: boolean } = {},
+) {
   const app = express()
 
   app.get('/api/submissions', (_req, res) => {
     res.json(history)
   })
 
-  app.use(express.static(path.resolve(__dirname, '../dist')))
+  if (opts.staticDist !== false) {
+    app.use(express.static(path.resolve(__dirname, '../dist')))
+  }
 
   return app.listen(port, () => {
     console.log(`Leet Years → http://localhost:${port}`)
