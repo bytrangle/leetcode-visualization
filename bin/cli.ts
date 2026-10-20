@@ -1,8 +1,25 @@
 import { stdin, stdout } from 'node:process'
 import { SAMPLE_SUBMISSIONS, generateLongHistory } from '../server/sampleData'
+import type { Difficulty } from '../server/sampleData'
 import { buildHistory, type History } from '../server/transform'
 import { startServer } from '../server/http'
-import { fetchAcceptedSubmissions } from '../server/leetcode'
+import {
+  EMPTY_ERROR,
+  authenticate,
+  fetchAllDifficulties,
+  fetchAcceptedSince,
+} from '../server/leetcode'
+import {
+  DIFFICULTIES_TTL_SECONDS,
+  SUBMISSIONS_TTL_SECONDS,
+  loadDifficultiesCache,
+  loadSubmissionsCache,
+  maxTimestamp,
+  mergeSubmissions,
+  nowSeconds,
+  saveDifficultiesCache,
+  saveSubmissionsCache,
+} from '../server/cache'
 
 const args = process.argv.slice(2)
 const apiOnly = args.includes('--api-only')
@@ -59,14 +76,10 @@ async function main() {
   }
 
   let username = ''
-  if (stdin.isTTY) {
-    username = await prompt('Enter your LeetCode username: ', false)
-  }
+  if (stdin.isTTY) username = await prompt('Enter your LeetCode username: ', false)
 
   let cookie = process.env.LEETCODE_SESSION ?? ''
-  if (!cookie && stdin.isTTY) {
-    cookie = await prompt('Paste your LEETCODE_SESSION cookie (hidden): ', true)
-  }
+  if (!cookie && stdin.isTTY) cookie = await prompt('Paste your LEETCODE_SESSION cookie (hidden): ', true)
   if (!cookie) {
     console.error(
       'No LeetCode session cookie provided.\n' +
@@ -77,14 +90,52 @@ async function main() {
     process.exit(1)
   }
 
+  const now = nowSeconds()
+
+  // 1. Fresh cache (within 1h) → serve it without touching the network.
+  const cached = loadSubmissionsCache()
+  if (cached && now - cached.savedAt < SUBMISSIONS_TTL_SECONDS) {
+    const mins = Math.max(1, Math.round((now - cached.savedAt) / 60))
+    console.log(`Using cached fetch from ~${mins} min ago (${cached.submissions.length} accepted submissions).`)
+    startServer(buildHistory(cached.submissions), PORT, { staticDist: !apiOnly })
+    return
+  }
+
   console.log('Fetching your LeetCode submissions…')
-  const { username: realUsername, submissions } = await fetchAcceptedSubmissions(cookie)
-  console.log(`Fetched ${submissions.length} accepted submissions for ${realUsername}.`)
+  const { lc, username: realUsername } = await authenticate(cookie)
   if (username && username !== realUsername) {
     console.log(`Note: that cookie belongs to "${realUsername}", not "${username}".`)
   }
 
-  const history: History = buildHistory(submissions)
+  // 2. Difficulty map: reuse if fresh, else full build (and cache it).
+  let difficulties: Map<string, Difficulty>
+  const cachedDiff = loadDifficultiesCache()
+  if (cachedDiff && now - cachedDiff.savedAt < DIFFICULTIES_TTL_SECONDS) {
+    difficulties = new Map(Object.entries(cachedDiff.map))
+    console.log(`Reusing cached problem difficulties (${difficulties.size} problems).`)
+  } else {
+    difficulties = await fetchAllDifficulties(lc)
+    saveDifficultiesCache({ savedAt: now, map: Object.fromEntries(difficulties) })
+  }
+
+  // 3. Only fetch submissions newer than the newest we already have.
+  const sinceSeconds = cached ? maxTimestamp(cached.submissions) : 0
+  const { submissions: freshSubs, difficulties: updatedDifficulties } = await fetchAcceptedSince(
+    lc,
+    sinceSeconds,
+    difficulties,
+  )
+  saveDifficultiesCache({ savedAt: now, map: Object.fromEntries(updatedDifficulties) })
+
+  const merged = mergeSubmissions(cached?.submissions ?? [], freshSubs)
+  if (merged.length === 0) {
+    console.error(EMPTY_ERROR)
+    process.exit(1)
+  }
+  saveSubmissionsCache({ savedAt: now, submissions: merged })
+  console.log(`Fetched ${freshSubs.length} new; ${merged.length} total accepted submissions.`)
+
+  const history: History = buildHistory(merged)
   startServer(history, PORT, { staticDist: !apiOnly })
 }
 
