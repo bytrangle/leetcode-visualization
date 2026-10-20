@@ -34,6 +34,14 @@ body {
   padding-top: 1.2em;
 }
 
+.intro {
+  color: #6b7280;
+  font-size: 16px;
+  max-width: 34em;
+  margin: 12px auto 0;
+  padding: 0 16px;
+}
+
 .letter {
   display: inline-block;
   animation: drop-bounce 1.15s ease-in-out both;

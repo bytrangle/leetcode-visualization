@@ -28,6 +28,10 @@ export default function App() {
   return (
     <main className="app">
       <Title text="Leet Years" />
+      <p className="intro">
+        Your LeetCode practice, replayed year by year — each day colored by difficulty.
+        Press Play to begin.
+      </p>
       <YearLabel label={year.label} />
       <Heatmap year={year} dayIndex={dayIndex} />
       <div className="controls">
