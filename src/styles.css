@@ -101,34 +101,36 @@ body {
   background: var(--grey);
 }
 
-.flip {
-  perspective: 60px;
+.flip-cell {
+  perspective: 230px;
 }
 
-.face {
-  position: absolute;
-  inset: 0;
+.cell-face {
   backface-visibility: hidden;
+  display: block;
+  height: 100%;
+  position: absolute;
+  width: 100%;
   transition: transform 0.3s ease;
   border-radius: 2px;
 }
 
-.face-initial {
+.initial-color {
   background: var(--grey);
   transform: rotateX(0deg);
-  transform-origin: 50% 50% -6px;
+  transform-origin: 50% 50% -20px;
 }
 
-.face-final {
+.final-color {
   transform: rotateX(90deg);
-  transform-origin: 50% 50% -6px;
+  transform-origin: 50% 50% -20px;
 }
 
-.flip.flipped .face-initial {
+.flip-cell.flipped .initial-color {
   transform: rotateX(-90deg);
 }
 
-.flip.flipped .face-final {
+.flip-cell.flipped .final-color {
   transform: rotateX(0deg);
 }
 

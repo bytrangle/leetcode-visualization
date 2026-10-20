@@ -6,9 +6,9 @@ interface CellProps {
 export default function Cell({ color, filled }: CellProps) {
   if (!color) return <span className="cell cell-empty" />
   return (
-    <span className={`cell flip${filled ? ' flipped' : ''}`}>
-      <span className="face face-final" style={{ background: color }} />
-      <span className="face face-initial" />
+    <span className={`cell flip-cell${filled ? ' flipped' : ''}`}>
+      <span className="cell-face final-color" style={{ background: color }} />
+      <span className="cell-face initial-color" />
     </span>
   )
 }
