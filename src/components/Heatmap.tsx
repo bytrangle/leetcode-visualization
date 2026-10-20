@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import Cell from './Cell'
 import Popup from './Popup'
 import { dayColor } from '../lib/colors'
 import type { Day, Year } from '../types'
 import type { Phase } from '../lib/replay'
+import { POPUP_MS, YEAR_FLIP_MS } from '../lib/timing'
 
 const WEEK_COLUMNS = 53
 const WEEK_ROWS = 7
@@ -48,15 +49,23 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
   const [popup, setPopup] = useState<{ day: Day; x: number; y: number } | null>(null)
   const prevYearLabel = useRef(year.label)
   const [flipping, setFlipping] = useState(false)
+  const [replayVisible, setReplayVisible] = useState(false)
 
   useEffect(() => {
     if (prevYearLabel.current === year.label) return
     prevYearLabel.current = year.label
     setHoveredDate(null)
     setFlipping(true)
-    const id = setTimeout(() => setFlipping(false), 600)
+    const id = setTimeout(() => setFlipping(false), YEAR_FLIP_MS)
     return () => clearTimeout(id)
   }, [year.label])
+
+  useEffect(() => {
+    if (phase !== 'playing' || dayIndex < 1) return
+    setReplayVisible(true)
+    const id = setTimeout(() => setReplayVisible(false), POPUP_MS)
+    return () => clearTimeout(id)
+  }, [phase, dayIndex])
 
   const posToDay = new Map<string, { day: Day; index: number }>()
   for (let i = 0; i < year.days.length; i++) {
@@ -67,7 +76,9 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
 
   // Which day the popup describes — hover wins over the replay's current day.
   const replayDay =
-    (phase === 'playing' || phase === 'paused') && dayIndex >= 1 ? year.days[dayIndex - 1] : null
+    dayIndex >= 1 && (phase === 'paused' || (phase === 'playing' && replayVisible))
+      ? year.days[dayIndex - 1]
+      : null
   const hoveredDay = hoveredDate ? year.days.find((d) => d.date === hoveredDate) ?? null : null
   const popupDay = hoveredDay ?? replayDay
 
@@ -145,9 +156,12 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
         createPortal(
           <Popup
             day={popup.day}
-            style={{
-              transform: `translate(${popup.x}px, ${popup.y}px) translateY(-50%)`,
-            }}
+            style={
+              {
+                '--popup-x': `${popup.x}px`,
+                '--popup-y': `${popup.y}px`,
+              } as CSSProperties
+            }
           />,
           document.body,
         )}

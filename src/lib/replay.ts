@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { History, Year } from '../types'
+import { DAY_STEP_MS } from './timing'
 
 export type Phase = 'idle' | 'playing' | 'paused' | 'ended'
 
-export const DAY_STEP_MS = 800 // 0.3s flip animation + 0.5s rest before the next cell
 export const SEEK_THRESHOLD_DAYS = 40 // show the seek bar only for long histories
 
 export function globalIndexToProgress(
