@@ -68,14 +68,18 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
     const grid = gridRef.current
     if (!grid) return
     const { col, row } = dayPosition(popupDay.date)
-    const cs = getComputedStyle(document.documentElement)
-    const cell = parseFloat(cs.getPropertyValue('--cell-size')) || 12
-    const gap = parseFloat(cs.getPropertyValue('--gap')) || 3
     const r = grid.getBoundingClientRect()
+    const cs = getComputedStyle(grid)
+    const colGap = parseFloat(cs.columnGap) || 0
+    const rowGap = parseFloat(cs.rowGap) || 0
+    const cellW = (r.width - (WEEK_COLUMNS - 1) * colGap) / WEEK_COLUMNS
+    const cellH = (r.height - (WEEK_ROWS - 1) * rowGap) / WEEK_ROWS
+    const left = r.left + col * (cellW + colGap)
+    const top = r.top + row * (cellH + rowGap)
     setPopup({
       day: popupDay,
-      x: r.left + (col + 0.5) * (cell + gap),
-      y: r.top + row * (cell + gap) - 6,
+      x: left + cellW + 8,
+      y: top + cellH / 2,
     })
   }, [popupDay])
 
@@ -131,9 +135,7 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
           <Popup
             day={popup.day}
             style={{
-              left: popup.x,
-              top: popup.y,
-              transform: 'translate(-50%, -100%)',
+              transform: `translate(${popup.x}px, ${popup.y}px) translateY(-50%)`,
             }}
           />,
           document.body,

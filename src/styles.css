@@ -206,6 +206,8 @@ body {
 
 .popup {
   position: fixed;
+  left: 0;
+  top: 0;
   z-index: 100;
   pointer-events: none;
   background: #1c1e21;
@@ -216,6 +218,17 @@ body {
   text-align: left;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
+  animation: popup-in 0.7s ease-in;
+  transition: transform 0.7s ease;
+}
+
+@keyframes popup-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .popup-row {

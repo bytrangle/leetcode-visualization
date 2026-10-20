@@ -3,7 +3,7 @@ import type { History, Year } from '../types'
 
 export type Phase = 'idle' | 'playing' | 'paused' | 'ended'
 
-export const DAY_STEP_MS = 500
+export const DAY_STEP_MS = 800 // 0.3s flip animation + 0.5s rest before the next cell
 
 export function useReplay(history: History | null) {
   const [phase, setPhase] = useState<Phase>('idle')
@@ -24,7 +24,10 @@ export function useReplay(history: History | null) {
 
   useEffect(() => {
     if (phase === 'playing' && dayCount > 0 && dayIndex >= dayCount) {
-      setPhase('ended')
+      const id = setTimeout(() => {
+        setPhase((p) => (p === 'playing' ? 'ended' : p))
+      }, DAY_STEP_MS)
+      return () => clearTimeout(id)
     }
   }, [phase, dayIndex, dayCount])
 
