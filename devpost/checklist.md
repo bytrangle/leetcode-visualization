@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Press play and watch active days fill in date order with blended difficulty colors; confirm the play button becomes pause.
   Commit: `Add replay: play fills days with difficulty color`
 
-- [ ] **3. Popup: the day's problems with difficulty dots, plus hover**
+- [x] **3. Popup: the day's problems with difficulty dots, plus hover**
   Becomes usable: As each cell fills (and on hover), a popup lists that day's problems with per-problem difficulty dots, auto-dismissing after ~0.5s.
   Why now: The popup makes the color legible — it shows which problems produced the day's average; without it the color is unexplained.
   PRD ref: `prd.md > Features and Behavior > Popup`
@@ -71,7 +71,7 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2 (replay visible), feedback can shape popup / year flip / controls
+- [x] Early usable behavior explored — after slice 2 (replay visible), feedback can shape popup / year flip / controls
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
