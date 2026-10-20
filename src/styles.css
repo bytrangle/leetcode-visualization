@@ -36,7 +36,7 @@ body {
 
 .letter {
   display: inline-block;
-  animation: drop-bounce 1.15s ease-in-out both;
+  animation: drop-bounce 0.75s both;
 }
 
 .letter-space {
@@ -45,22 +45,19 @@ body {
 
 @keyframes drop-bounce {
   0% {
-    opacity: 0;
-    transform: translateY(-1.1em);
+    transform: translateY(-0.95em);
+    animation-timing-function: ease-in;
   }
-  20% {
-    opacity: 1;
-    transform: translateY(-0.12em);
-  }
-  50% {
+  62% {
     transform: translateY(0);
+    animation-timing-function: ease-out;
   }
-  75% {
-    transform: translateY(-0.4em);
+  82% {
+    transform: translateY(-0.36em);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
   }
   100% {
     transform: translateY(0);
-    opacity: 1;
   }
 }
 
