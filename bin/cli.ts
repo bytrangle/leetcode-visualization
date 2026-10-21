@@ -70,7 +70,10 @@ async function main() {
     console.log(
       useLong ? 'Loading long sample history (--long)…' : 'Loading sample practice history (demo)…',
     )
-    const history: History = buildHistory(useLong ? generateLongHistory() : SAMPLE_SUBMISSIONS)
+    const history: History = buildHistory(
+      useLong ? generateLongHistory() : SAMPLE_SUBMISSIONS,
+      useLong ? 'demo-long' : 'demo',
+    )
     startServer(history, PORT, { staticDist: !apiOnly })
     return
   }
@@ -97,7 +100,19 @@ async function main() {
   if (cached && now - cached.savedAt < SUBMISSIONS_TTL_SECONDS) {
     const mins = Math.max(1, Math.round((now - cached.savedAt) / 60))
     console.log(`Using cached fetch from ~${mins} min ago (${cached.submissions.length} accepted submissions).`)
-    startServer(buildHistory(cached.submissions), PORT, { staticDist: !apiOnly })
+    // A cache written before the username was tracked has none — one cheap whoami
+    // call fills it in (no full submission scan).
+    let cachedUsername = cached.username
+    if (!cachedUsername) {
+      try {
+        cachedUsername = (await authenticate(cookie)).username
+        saveSubmissionsCache({ ...cached, username: cachedUsername })
+        console.log(`Identified account as ${cachedUsername}.`)
+      } catch {
+        // non-fatal: the page just omits the username
+      }
+    }
+    startServer(buildHistory(cached.submissions, cachedUsername), PORT, { staticDist: !apiOnly })
     return
   }
 
@@ -132,10 +147,10 @@ async function main() {
     console.error(EMPTY_ERROR)
     process.exit(1)
   }
-  saveSubmissionsCache({ savedAt: now, submissions: merged })
+  saveSubmissionsCache({ savedAt: now, submissions: merged, username: realUsername })
   console.log(`Fetched ${freshSubs.length} new; ${merged.length} total accepted submissions.`)
 
-  const history: History = buildHistory(merged)
+  const history: History = buildHistory(merged, realUsername)
   startServer(history, PORT, { staticDist: !apiOnly })
 }
 

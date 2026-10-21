@@ -14,6 +14,7 @@ export interface Year {
 }
 export interface History {
   years: Year[]
+  username?: string
 }
 
 function toDateString(ts: number): string {
@@ -22,7 +23,7 @@ function toDateString(ts: number): string {
 
 // Group raw submissions into years → (date → problems), each sorted ascending.
 // The live-data path (slice 6) feeds the same shape in here.
-export function buildHistory(submissions: Submission[]): History {
+export function buildHistory(submissions: Submission[], username?: string): History {
   const yearMap = new Map<number, Map<string, Problem[]>>()
 
   for (const s of submissions) {
@@ -43,5 +44,5 @@ export function buildHistory(submissions: Submission[]): History {
         .map(([date, problems]) => ({ date, problems })),
     }))
 
-  return { years }
+  return { years, username }
 }

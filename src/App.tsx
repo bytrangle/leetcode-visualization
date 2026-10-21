@@ -47,6 +47,9 @@ export default function App() {
         Your LeetCode practice, one year at a time — each day colored by difficulty.
         Use the arrows to change years, or press Play to watch the days fill in.
       </p>
+      {history.username && (
+        <p className="history-owner">Practice history for <strong>{history.username}</strong></p>
+      )}
       <YearNav
         label={year.label}
         canGoPrev={canGoPrev}

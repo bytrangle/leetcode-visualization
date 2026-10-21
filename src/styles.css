@@ -74,12 +74,19 @@ body {
   }
 }
 
+.history-owner {
+  text-align: center;
+  color: #374151;
+  font-size: 14px;
+  margin-top: 2rem;
+}
+
 .year-nav {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .year-arrow {

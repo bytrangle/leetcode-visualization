@@ -10,6 +10,7 @@ const CACHE_DIR = path.resolve(process.cwd(), '.cache')
 export interface SubmissionsCache {
   savedAt: number // unix seconds
   submissions: Submission[]
+  username?: string
 }
 
 export interface DifficultiesCache {

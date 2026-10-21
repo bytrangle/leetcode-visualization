@@ -17,4 +17,5 @@ export interface Year {
 
 export interface History {
   years: Year[]
+  username?: string
 }
