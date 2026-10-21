@@ -65,6 +65,20 @@ function prompt(question: string, secret: boolean): Promise<string> {
   })
 }
 
+function reportHistory(history: History) {
+  const years = history.years
+  const totalDays = years.reduce((n, y) => n + y.days.length, 0)
+  const totalProblems = years.reduce(
+    (n, y) => n + y.days.reduce((m, d) => m + d.problems.length, 0),
+    0,
+  )
+  const span = years.length > 0 ? `${years[0].label}–${years[years.length - 1].label}` : 'none'
+  const owner = history.username ? ` for ${history.username}` : ''
+  console.log(
+    `History${owner}: ${totalProblems} accepted problems across ${totalDays} practice days, ${span}.`,
+  )
+}
+
 async function main() {
   if (useDemo || useLong) {
     console.log(
@@ -74,24 +88,39 @@ async function main() {
       useLong ? generateLongHistory() : SAMPLE_SUBMISSIONS,
       useLong ? 'demo-long' : 'demo',
     )
+    reportHistory(history)
     startServer(history, PORT, { staticDist: !apiOnly })
     return
   }
 
-  let username = ''
-  if (stdin.isTTY) username = await prompt('Enter your LeetCode username: ', false)
+  console.log('😺 Welcome to LeetYear, a tiny tool for visualizing your Leetcode practice throughout the years.\n')
 
   let cookie = process.env.LEETCODE_SESSION ?? ''
-  if (!cookie && stdin.isTTY) cookie = await prompt('Paste your LEETCODE_SESSION cookie (hidden): ', true)
-  if (!cookie) {
-    console.error(
-      'No LeetCode session cookie provided.\n' +
-        '  • set LEETCODE_SESSION to your cookie, or\n' +
-        '  • run in a terminal and paste it, or\n' +
-        '  • use --demo for sample data.',
+  if (!cookie && stdin.isTTY) {
+    cookie = await prompt(
+      'Paste your LeetCode session cookie to fetch your Leetcode practice history (hidden), or just press Enter to use the sample data: ',
+      true,
     )
-    process.exit(1)
   }
+  if (!cookie) {
+    if (!stdin.isTTY) {
+      console.error(
+        'No LeetCode session cookie provided.\n' +
+          '  • set LEETCODE_SESSION to your cookie, or\n' +
+          '  • run in a terminal and paste it, or\n' +
+          '  • use --demo for sample data.',
+      )
+      process.exit(1)
+    }
+    console.log('Received: no session cookie — using the sample data.')
+    console.log('Loading sample practice history (demo)…')
+    const history: History = buildHistory(SAMPLE_SUBMISSIONS, 'demo')
+    reportHistory(history)
+    startServer(history, PORT, { staticDist: !apiOnly })
+    return
+  }
+
+  console.log(`Received: a session cookie (${cookie.length} characters) — fetching your LeetCode data.`)
 
   const now = nowSeconds()
 
@@ -112,15 +141,14 @@ async function main() {
         // non-fatal: the page just omits the username
       }
     }
-    startServer(buildHistory(cached.submissions, cachedUsername), PORT, { staticDist: !apiOnly })
+    const cachedHistory = buildHistory(cached.submissions, cachedUsername)
+    reportHistory(cachedHistory)
+    startServer(cachedHistory, PORT, { staticDist: !apiOnly })
     return
   }
 
   console.log('Fetching your LeetCode submissions…')
   const { lc, username: realUsername } = await authenticate(cookie)
-  if (username && username !== realUsername) {
-    console.log(`Note: that cookie belongs to "${realUsername}", not "${username}".`)
-  }
 
   // 2. Difficulty map: reuse if fresh, else full build (and cache it).
   let difficulties: Map<string, Difficulty>
@@ -151,6 +179,7 @@ async function main() {
   console.log(`Fetched ${freshSubs.length} new; ${merged.length} total accepted submissions.`)
 
   const history: History = buildHistory(merged, realUsername)
+  reportHistory(history)
   startServer(history, PORT, { staticDist: !apiOnly })
 }
 
