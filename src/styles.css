@@ -123,24 +123,43 @@ body {
   gap: var(--gap);
 }
 
-.heatmap.year-flip {
-  animation: year-flip var(--year-flip-ms, 0.6s) ease;
+.heatmap-stage {
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+  perspective: 1200px;
 }
 
-@keyframes year-flip {
+.heatmap-layer {
+  transform-origin: 50% 50%;
+}
+
+.heatmap-layer.flip-in {
+  animation: year-flip-in var(--year-flip-half-ms, 0.4s) ease-in;
+}
+
+.heatmap-layer.flip-out {
+  position: absolute;
+  inset: 0;
+  animation: year-flip-out var(--year-flip-half-ms, 0.4s) ease-out;
+}
+
+@keyframes year-flip-in {
   from {
-    transform: rotateX(-90deg);
+    transform: rotateX(90deg);
   }
   to {
     transform: rotateX(0deg);
   }
 }
 
-.heatmap-wrap {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 16px;
+@keyframes year-flip-out {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-90deg);
+  }
 }
 
 .heatmap-months {

@@ -5,7 +5,7 @@ import Popup from './Popup'
 import { dayColor } from '../lib/colors'
 import type { Day, Year } from '../types'
 import type { Phase } from '../lib/replay'
-import { POPUP_MS, YEAR_FLIP_MS } from '../lib/timing'
+import { POPUP_MS, YEAR_FLIP_HALF_MS } from '../lib/timing'
 
 const WEEK_COLUMNS = 53
 const WEEK_ROWS = 7
@@ -46,20 +46,16 @@ export default function Heatmap({ year, dayIndex, phase, epoch }: HeatmapProps) 
   const [hoveredDate, setHoveredDate] = useState<string | null>(null)
   const [popup, setPopup] = useState<{ day: Day; x: number; y: number } | null>(null)
   const [replayVisible, setReplayVisible] = useState(false)
-  const prevYearLabel = useRef(year.label)
+
+  // Year-flip state: the outgoing year is kept mounted and rotates away while
+  // the incoming year rotates in, so the two meet edge-on at the midpoint.
+  const [outgoingYear, setOutgoingYear] = useState<Year | null>(null)
   const [flipping, setFlipping] = useState(false)
+  const [flipKey, setFlipKey] = useState(0)
+  const prevYear = useRef<{ label: number; data: Year }>({ label: year.label, data: year })
 
   // idle/ended show the year fully colored; playing/paused show partial progress.
   const complete = phase === 'idle' || phase === 'ended'
-
-  useEffect(() => {
-    if (prevYearLabel.current === year.label) return
-    prevYearLabel.current = year.label
-    setHoveredDate(null)
-    setFlipping(true)
-    const id = setTimeout(() => setFlipping(false), YEAR_FLIP_MS)
-    return () => clearTimeout(id)
-  }, [year.label])
 
   useEffect(() => {
     if (phase !== 'playing' || dayIndex < 1) return
@@ -68,12 +64,23 @@ export default function Heatmap({ year, dayIndex, phase, epoch }: HeatmapProps) 
     return () => clearTimeout(id)
   }, [phase, dayIndex])
 
-  const posToDay = new Map<string, { day: Day; index: number }>()
-  for (let i = 0; i < year.days.length; i++) {
-    const day = year.days[i]
-    const { col, row } = dayPosition(day.date)
-    posToDay.set(`${col}:${row}`, { day, index: i })
-  }
+  // Runs before paint, so the flip class is applied in the same frame the new
+  // year is committed — otherwise the new grid flashes in flat for one frame.
+  useLayoutEffect(() => {
+    if (prevYear.current.label === year.label) return
+    const old = prevYear.current.data // remember the year we're leaving
+    prevYear.current = { label: year.label, data: year }
+    setHoveredDate(null)
+    setOutgoingYear(old) // keep the old year mounted
+    setFlipKey((k) => k + 1) // remount both layers
+    setFlipping(true) // turn on the animation
+    const mid = setTimeout(() => setOutgoingYear(null), YEAR_FLIP_HALF_MS)
+    const end = setTimeout(() => setFlipping(false), YEAR_FLIP_HALF_MS * 2)
+    return () => {
+      clearTimeout(mid)
+      clearTimeout(end)
+    }
+  }, [year])
 
   const replayDay =
     dayIndex >= 1 && (phase === 'paused' || (phase === 'playing' && replayVisible))
@@ -105,33 +112,45 @@ export default function Heatmap({ year, dayIndex, phase, epoch }: HeatmapProps) 
     })
   }, [popupDay])
 
-  const cells = []
-  for (let col = 0; col < WEEK_COLUMNS; col++) {
-    for (let row = 0; row < WEEK_ROWS; row++) {
-      const key = `${col}:${row}`
-      const hit = posToDay.get(key)
-      if (hit) {
-        const isFilled = complete || dayIndex > hit.index
-        cells.push(
-          <Cell
-            key={`${epoch}:${key}`}
-            color={dayColor(hit.day.problems)}
-            filled={isFilled}
-            onMouseEnter={isFilled ? () => setHoveredDate(hit.day.date) : undefined}
-            onMouseLeave={isFilled ? () => setHoveredDate(null) : undefined}
-          />,
-        )
-      } else {
-        cells.push(<Cell key={`${epoch}:${key}`} filled={false} />)
+  const renderLayer = (target: Year, interactive: boolean) => {
+    // Build this layer's own position map — the outgoing year has different
+    // days than the incoming one.
+    const targetPos = new Map<string, { day: Day; index: number }>()
+    for (let i = 0; i < target.days.length; i++) {
+      const day = target.days[i]
+      const { col, row } = dayPosition(day.date)
+      targetPos.set(`${col}:${row}`, { day, index: i })
+    }
+    const targetDayCount = target.days.length
+    // The outgoing year is always shown complete; the incoming one follows the replay.
+    const targetIndex = interactive ? dayIndex : targetDayCount
+
+    const cells = []
+    for (let col = 0; col < WEEK_COLUMNS; col++) {
+      for (let row = 0; row < WEEK_ROWS; row++) {
+        const key = `${col}:${row}`
+        const hit = targetPos.get(key)
+        if (hit) {
+          const isFilled = complete || targetIndex > hit.index
+          cells.push(
+            <Cell
+              key={`${epoch}:${key}`}
+              color={dayColor(hit.day.problems)}
+              filled={isFilled}
+              onMouseEnter={interactive && isFilled ? () => setHoveredDate(hit.day.date) : undefined}
+              onMouseLeave={interactive && isFilled ? () => setHoveredDate(null) : undefined}
+            />,
+          )
+        } else {
+          cells.push(<Cell key={`${epoch}:${key}`} filled={false} />)
+        }
       }
     }
-  }
 
-  const months = monthColumns(year.label)
+    const months = monthColumns(target.label)
 
-  return (
-    <>
-      <div className="heatmap-wrap">
+    return (
+      <>
         <div className="heatmap-months">
           {months.map((name, i) => (
             <span key={i} className="month-label">
@@ -147,10 +166,25 @@ export default function Heatmap({ year, dayIndex, phase, epoch }: HeatmapProps) 
               </span>
             ))}
           </div>
-          <div className={`heatmap${flipping ? ' year-flip' : ''}`} ref={gridRef}>
+          <div className="heatmap" ref={interactive ? gridRef : undefined}>
             {cells}
           </div>
         </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <div className="heatmap-stage">
+        <div className={`heatmap-layer${flipping ? ' flip-in' : ''}`} key={`in-${flipKey}`}>
+          {renderLayer(year, true)}
+        </div>
+        {flipping && outgoingYear && (
+          <div className="heatmap-layer flip-out" key={`out-${flipKey}`}>
+            {renderLayer(outgoingYear, false)}
+          </div>
+        )}
       </div>
       {popup &&
         createPortal(
