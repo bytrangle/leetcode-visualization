@@ -13,8 +13,6 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 // rows are Sunday-first (0 = Sun); GitHub shows Mon / Wed / Fri
 const WEEKDAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', '']
 
-// Map a YYYY-MM-DD date to a GitHub-style (column, row): columns are weeks,
-// rows are days of the week (Sunday = 0).
 function dayPosition(date: string): { col: number; row: number } {
   const d = new Date(date + 'T00:00:00Z')
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
@@ -24,7 +22,6 @@ function dayPosition(date: string): { col: number; row: number } {
   return { col: Math.floor(offset / 7), row: offset % 7 }
 }
 
-// Column index of the first cell of each month, for the current year.
 function monthColumns(yearLabel: number): (string | null)[] {
   const firstWeekday = new Date(Date.UTC(yearLabel, 0, 1)).getUTCDay()
   const cols: (string | null)[] = new Array(WEEK_COLUMNS).fill(null)
@@ -41,15 +38,19 @@ interface HeatmapProps {
   year: Year
   dayIndex: number
   phase: Phase
+  epoch: number
 }
 
-export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
+export default function Heatmap({ year, dayIndex, phase, epoch }: HeatmapProps) {
   const gridRef = useRef<HTMLDivElement>(null)
   const [hoveredDate, setHoveredDate] = useState<string | null>(null)
   const [popup, setPopup] = useState<{ day: Day; x: number; y: number } | null>(null)
+  const [replayVisible, setReplayVisible] = useState(false)
   const prevYearLabel = useRef(year.label)
   const [flipping, setFlipping] = useState(false)
-  const [replayVisible, setReplayVisible] = useState(false)
+
+  // idle/ended show the year fully colored; playing/paused show partial progress.
+  const complete = phase === 'idle' || phase === 'ended'
 
   useEffect(() => {
     if (prevYearLabel.current === year.label) return
@@ -74,7 +75,6 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
     posToDay.set(`${col}:${row}`, { day, index: i })
   }
 
-  // Which day the popup describes — hover wins over the replay's current day.
   const replayDay =
     dayIndex >= 1 && (phase === 'paused' || (phase === 'playing' && replayVisible))
       ? year.days[dayIndex - 1]
@@ -111,10 +111,10 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
       const key = `${col}:${row}`
       const hit = posToDay.get(key)
       if (hit) {
-        const isFilled = dayIndex > hit.index
+        const isFilled = complete || dayIndex > hit.index
         cells.push(
           <Cell
-            key={key}
+            key={`${epoch}:${key}`}
             color={dayColor(hit.day.problems)}
             filled={isFilled}
             onMouseEnter={isFilled ? () => setHoveredDate(hit.day.date) : undefined}
@@ -122,7 +122,7 @@ export default function Heatmap({ year, dayIndex, phase }: HeatmapProps) {
           />,
         )
       } else {
-        cells.push(<Cell key={key} filled={false} />)
+        cells.push(<Cell key={`${epoch}:${key}`} filled={false} />)
       }
     }
   }
