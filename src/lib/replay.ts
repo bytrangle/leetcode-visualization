@@ -1,39 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { History, Year } from '../types'
 import { DAY_STEP_MS } from './timing'
 
 export type Phase = 'idle' | 'playing' | 'paused' | 'ended'
 
-export const SEEK_THRESHOLD_DAYS = 40 // show the seek bar only for long histories
-
-export function globalIndexToProgress(
-  years: Year[],
-  globalIndex: number,
-): { yearIndex: number; dayIndex: number } {
-  let remaining = globalIndex
-  let yearIndex = 0
-  while (yearIndex < years.length - 1 && remaining > years[yearIndex].days.length) {
-    remaining -= years[yearIndex].days.length
-    yearIndex++
-  }
-  return { yearIndex, dayIndex: Math.min(remaining, years[yearIndex]?.days.length ?? 0) }
-}
-
 export function useReplay(history: History | null) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [yearIndex, setYearIndex] = useState(0)
   const [dayIndex, setDayIndex] = useState(0)
+  const [epoch, setEpoch] = useState(0)
 
   const years = history?.years ?? []
   const year: Year | null = years[yearIndex] ?? null
   const dayCount = year?.days.length ?? 0
-
-  const totalDays = useMemo(() => years.reduce((sum, y) => sum + y.days.length, 0), [years])
-  const currentGlobal = useMemo(() => {
-    let sum = 0
-    for (let i = 0; i < yearIndex; i++) sum += years[i]?.days.length ?? 0
-    return sum + dayIndex
-  }, [years, yearIndex, dayIndex])
+  const yearCount = years.length
 
   useEffect(() => {
     if (phase !== 'playing') return
@@ -46,22 +26,24 @@ export function useReplay(history: History | null) {
   useEffect(() => {
     if (phase !== 'playing' || dayCount === 0 || dayIndex < dayCount) return
     const id = setTimeout(() => {
-      if (yearIndex < years.length - 1) {
-        setYearIndex((i) => i + 1)
-        setDayIndex(0)
-      } else {
-        setPhase((p) => (p === 'playing' ? 'ended' : p))
-      }
+      setPhase((p) => (p === 'playing' ? 'ended' : p))
     }, DAY_STEP_MS)
     return () => clearTimeout(id)
-  }, [phase, dayIndex, dayCount, yearIndex, years.length])
+  }, [phase, dayCount, dayIndex])
+
+  function goToYear(i: number) {
+    if (i < 0 || i >= yearCount) return
+    setYearIndex(i)
+    setDayIndex(0)
+    setPhase('idle')
+  }
 
   function play() {
-    if (phase === 'ended') {
-      setYearIndex(0)
+    if (phase === 'idle' || phase === 'ended') {
+      setEpoch((e) => e + 1)
       setDayIndex(0)
       setPhase('playing')
-    } else if (phase === 'idle' || phase === 'paused') {
+    } else if (phase === 'paused') {
       setPhase('playing')
     }
   }
@@ -71,14 +53,24 @@ export function useReplay(history: History | null) {
   }
 
   function seekTo(fraction: number) {
-    if (totalDays === 0) return
+    if (dayCount === 0) return
     const clamped = Math.max(0, Math.min(1, fraction))
-    const target = Math.round(clamped * totalDays)
-    const { yearIndex: yi, dayIndex: di } = globalIndexToProgress(years, target)
-    setYearIndex(yi)
-    setDayIndex(di)
+    setDayIndex(Math.round(clamped * dayCount))
     setPhase('paused')
   }
 
-  return { phase, year, dayIndex, totalDays, currentGlobal, play, pause, seekTo }
+  return {
+    phase,
+    year,
+    dayIndex,
+    dayCount,
+    epoch,
+    canGoPrev: yearIndex > 0,
+    canGoNext: yearIndex < yearCount - 1,
+    goPrev: () => goToYear(yearIndex - 1),
+    goNext: () => goToYear(yearIndex + 1),
+    play,
+    pause,
+    seekTo,
+  }
 }
