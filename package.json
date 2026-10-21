@@ -1,14 +1,24 @@
 {
   "name": "leet-years",
   "version": "0.1.0",
-  "private": true,
+  "description": "Visualize your LeetCode practice history as an animated, difficulty-colored heatmap.",
+  "license": "MIT",
   "type": "module",
+  "bin": {
+    "leet-years": "build/bin/cli.js"
+  },
+  "files": [
+    "build",
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "dev": "concurrently -k \"tsx bin/cli.ts --api-only --demo\" \"vite\"",
-    "dev:long": "concurrently -k \"tsx bin/cli.ts --api-only --long\" \"vite\"",
-    "build": "vite build",
-    "start": "tsx bin/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "build": "vite build && tsc -p tsconfig.server.json && chmod +x build/bin/cli.js",
+    "build:web": "vite build",
+    "start": "npm run build:web && tsx bin/cli.ts",
+    "prepare": "npm run build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit"
   },
   "dependencies": {
     "express": "^4.19.2",

@@ -1,14 +1,15 @@
+#!/usr/bin/env node
 import { stdin, stdout } from 'node:process'
-import { SAMPLE_SUBMISSIONS, SAMPLE_USERNAME, generateLongHistory } from '../server/sampleData'
-import type { Difficulty } from '../server/sampleData'
-import { buildHistory, type History } from '../server/transform'
-import { startServer } from '../server/http'
+import { SAMPLE_SUBMISSIONS, SAMPLE_USERNAME } from '../server/sampleData.js'
+import type { Difficulty } from '../server/sampleData.js'
+import { buildHistory, type History } from '../server/transform.js'
+import { startServer } from '../server/http.js'
 import {
   EMPTY_ERROR,
   authenticate,
   fetchAllDifficulties,
   fetchAcceptedSince,
-} from '../server/leetcode'
+} from '../server/leetcode.js'
 import {
   DIFFICULTIES_TTL_SECONDS,
   SUBMISSIONS_TTL_SECONDS,
@@ -19,11 +20,10 @@ import {
   nowSeconds,
   saveDifficultiesCache,
   saveSubmissionsCache,
-} from '../server/cache'
+} from '../server/cache.js'
 
 const args = process.argv.slice(2)
 const apiOnly = args.includes('--api-only')
-const useLong = args.includes('--long')
 const useDemo = args.includes('--demo')
 const PORT = Number(process.env.PORT ?? 3000)
 
@@ -80,14 +80,9 @@ function reportHistory(history: History) {
 }
 
 async function main() {
-  if (useDemo || useLong) {
-    console.log(
-      useLong ? 'Loading long sample history (--long)…' : 'Loading sample practice history (demo)…',
-    )
-    const history: History = buildHistory(
-      useLong ? generateLongHistory() : SAMPLE_SUBMISSIONS,
-      useLong ? 'demo-long' : SAMPLE_USERNAME,
-    )
+  if (useDemo) {
+    console.log('Loading sample practice history (demo)…')
+    const history: History = buildHistory(SAMPLE_SUBMISSIONS, SAMPLE_USERNAME)
     reportHistory(history)
     startServer(history, PORT, { staticDist: !apiOnly })
     return

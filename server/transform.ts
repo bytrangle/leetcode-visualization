@@ -1,4 +1,4 @@
-import type { Difficulty, Submission } from './sampleData'
+import type { Difficulty, Submission } from './sampleData.js'
 
 export interface Problem {
   title: string

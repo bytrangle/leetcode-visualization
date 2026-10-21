@@ -1,5 +1,5 @@
 import { Credential, LeetCode } from 'leetcode-query'
-import type { Difficulty, Submission } from './sampleData'
+import type { Difficulty, Submission } from './sampleData.js'
 
 export const AUTH_ERROR = 'Invalid or expired LeetCode session cookie.'
 export const EMPTY_ERROR = 'This account has no practice history yet.'

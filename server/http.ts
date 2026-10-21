@@ -1,9 +1,24 @@
 import express from 'express'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { History } from './transform'
+import type { History } from './transform.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// The frontend build lives in `dist/`. This file runs from `server/` in the
+// source tree and from `build/server/` after compilation, so look in both
+// places and use whichever exists.
+function findDistDir(): string | null {
+  const candidates = [
+    path.resolve(__dirname, '../dist'), // build/server -> build/dist (published layout)
+    path.resolve(__dirname, '../../dist'), // server -> ./dist (source tree)
+  ]
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, 'index.html'))) return dir
+  }
+  return null
+}
 
 export function startServer(
   history: History,
@@ -17,7 +32,14 @@ export function startServer(
   })
 
   if (opts.staticDist !== false) {
-    app.use(express.static(path.resolve(__dirname, '../dist')))
+    const distDir = findDistDir()
+    if (distDir) {
+      app.use(express.static(distDir))
+    } else {
+      console.warn(
+        'Warning: frontend build not found. Run `npm run build` before starting the server.',
+      )
+    }
   }
 
   return app.listen(port, () => {

@@ -9,6 +9,7 @@
 # Node / build output
 node_modules/
 dist/
+build/
 
 # Agent / tooling machinery (not part of the project)
 agent/

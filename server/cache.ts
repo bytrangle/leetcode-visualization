@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type { Difficulty, Submission } from './sampleData'
+import type { Difficulty, Submission } from './sampleData.js'
 
 export const SUBMISSIONS_TTL_SECONDS = 60 * 60 // 1 hour — serve cached data within this window
 export const DIFFICULTIES_TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days — problem difficulties rarely change
