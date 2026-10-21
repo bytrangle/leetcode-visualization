@@ -3,7 +3,7 @@ import Controls from './components/Controls'
 import Heatmap from './components/Heatmap'
 import Legend from './components/Legend'
 import Title from './components/Title'
-import YearLabel from './components/YearLabel'
+import YearNav from './components/YearNav'
 import { useReplay } from './lib/replay'
 import type { History } from './types'
 
@@ -17,7 +17,20 @@ export default function App() {
       .catch(() => setHistory({ years: [] }))
   }, [])
 
-  const { phase, year, dayIndex, totalDays, currentGlobal, play, pause, seekTo } = useReplay(history)
+  const {
+    phase,
+    year,
+    dayIndex,
+    dayCount,
+    epoch,
+    canGoPrev,
+    canGoNext,
+    goPrev,
+    goNext,
+    play,
+    pause,
+    seekTo,
+  } = useReplay(history)
 
   if (!history) return <p className="loading">Loading…</p>
   if (!year) return <p className="empty">No practice history found.</p>
@@ -31,10 +44,16 @@ export default function App() {
     <main className="app">
       <Title text="Leet Years" />
       <p className="intro">
-        Your LeetCode practice, replayed year by year — each day colored by difficulty.
-        Press Play to begin.
+        Your LeetCode practice, one year at a time — each day colored by difficulty.
+        Use the arrows to change years, or press Play to watch the days fill in.
       </p>
-      <YearLabel label={year.label} />
+      <YearNav
+        label={year.label}
+        canGoPrev={canGoPrev}
+        canGoNext={canGoNext}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
       <Legend />
       <Heatmap year={year} dayIndex={dayIndex} phase={phase} />
       <Controls
