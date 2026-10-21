@@ -247,6 +247,11 @@ body {
   gap: 12px;
 }
 
+.loop-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
 .seek {
   -webkit-appearance: none;
   appearance: none;

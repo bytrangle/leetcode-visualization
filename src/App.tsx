@@ -55,11 +55,11 @@ export default function App() {
         onNext={goNext}
       />
       <Legend />
-      <Heatmap year={year} dayIndex={dayIndex} phase={phase} />
+      <Heatmap year={year} dayIndex={dayIndex} phase={phase} epoch={epoch} />
       <Controls
         phase={phase}
-        totalDays={totalDays}
-        currentGlobal={currentGlobal}
+        dayCount={dayCount}
+        dayIndex={dayIndex}
         onToggle={toggle}
         onSeek={seekTo}
       />
