@@ -1,5 +1,5 @@
 import { stdin, stdout } from 'node:process'
-import { SAMPLE_SUBMISSIONS, generateLongHistory } from '../server/sampleData'
+import { SAMPLE_SUBMISSIONS, SAMPLE_USERNAME, generateLongHistory } from '../server/sampleData'
 import type { Difficulty } from '../server/sampleData'
 import { buildHistory, type History } from '../server/transform'
 import { startServer } from '../server/http'
@@ -86,7 +86,7 @@ async function main() {
     )
     const history: History = buildHistory(
       useLong ? generateLongHistory() : SAMPLE_SUBMISSIONS,
-      useLong ? 'demo-long' : 'demo',
+      useLong ? 'demo-long' : SAMPLE_USERNAME,
     )
     reportHistory(history)
     startServer(history, PORT, { staticDist: !apiOnly })
@@ -114,7 +114,7 @@ async function main() {
     }
     console.log('Received: no session cookie — using the sample data.')
     console.log('Loading sample practice history (demo)…')
-    const history: History = buildHistory(SAMPLE_SUBMISSIONS, 'demo')
+    const history: History = buildHistory(SAMPLE_SUBMISSIONS, SAMPLE_USERNAME)
     reportHistory(history)
     startServer(history, PORT, { staticDist: !apiOnly })
     return
