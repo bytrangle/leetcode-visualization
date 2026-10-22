@@ -24,6 +24,11 @@ The CLI asks for your LeetCode session cookie (the cookie is used only in the
 local process, never stored or sent anywhere else). **Press Enter instead to
 explore with a sample history** — no cookie, no network.
 
+The bundled sample (`server/sample-2023-2026.json`) is generated, not personal:
+it uses real LeetCode problems from the public catalog and a realistic practice
+rhythm, with every problem the maintainer actually solved excluded. Regenerate
+it with `node scripts/generateSampleData.mjs`.
+
 Then open <http://localhost:3000>.
 
 ### Getting your cookie
