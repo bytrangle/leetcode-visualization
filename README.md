@@ -1,5 +1,7 @@
 # Leet Years
 
+<img width="1672" height="874" alt="Screenshot from 2026-10-23 20-49-16" src="https://github.com/user-attachments/assets/3fccc74c-20a9-46b6-9574-4e7594a802e4" />
+
 Replay your own LeetCode practice history as a difficulty-colored heatmap.
 
 Each year is a GitHub-style contribution grid where every day is colored by the
